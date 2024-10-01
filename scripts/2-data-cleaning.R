@@ -6,3 +6,4 @@
 
 
 data <- read.csv("data/raw_data/players_20.csv")
+name_cleaned_data <- clean_names(data)
