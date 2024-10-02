@@ -134,7 +134,7 @@ summary(fit_rating_log)
 ```{R}
 
 
-fit_rating_better = lm(overall ~ age + wage_eur + international_reputation +passing + physic, data = players_20)
+fit_rating_better = lm(overall ~ poly(age, 2) + wage_eur + international_reputation +passing + physic, data = players_20)
 fitted_value = fitted(fit_rating_better)
 plot(fitted_value,players_20$overall, xlim=c(50,100))
 abline(0, 1, col='blue')
