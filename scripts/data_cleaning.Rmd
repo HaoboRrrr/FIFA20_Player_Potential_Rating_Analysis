@@ -1,0 +1,81 @@
+---
+title: "data_cleaning"
+output: pdf_document
+date: "2024-10-01"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{R}
+library(readr)
+library(tidyverse)
+library(stringr)
+```
+
+```{R import}
+
+players_20_raw <- read_csv("../data/raw_data/players_20.csv")
+players_20_raw <- players_20_raw %>% filter(player_positions != "GK")
+
+players_20 <- players_20_raw |> select(
+  short_name,
+  age,
+  height_cm,
+  weight_kg,
+  nationality,
+  club,
+  overall,
+  potential,
+  value_eur,
+  wage_eur,
+  player_positions,
+  international_reputation,
+  skill_moves,
+  body_type,
+  release_clause_eur,
+  player_tags,
+  team_position,
+  pace,
+  shooting,
+  passing,
+  dribbling,
+  defending,
+  physic
+)
+summary(players_20)
+
+```
+
+
+```{R}
+players_20$Top_country <- ifelse(players_20$nationality %in% c("Belgium", "France", "Brazil","England","Portugal","Spain","Argentina","Uruguay","Mexico"), 
+                        "Top_9", 
+                        ifelse(players_20$nationality %in% c("Italy", "Croatia","Denmark","Germany","Netherlands","Colombia","Switzerland","Chile","Wales","Poland","Senegal","Sweden"), 
+                               "Top_20", 
+                               "Other"))
+
+
+players_20$Top_Club  <- ifelse(players_20$club %in% c("Real Madrid","FC Barcelona","Bayern Munich","Atlético Madrid","Juventus","Manchester City","Paris Saint-Germain","Liverpool","Sevilla FC","Arsenal"),"Top_10",
+                         ifelse(players_20$club %in% c("Borussia Dortmund","Manchester United","Chelsea FC","FC Porto","Tottenham Hotspur","AS Roma","Napoli","Benfica","Shakhtar Donetsk","Zenit St. Petersburg"),"Top_20","other")
+)
+
+```
+
+
+```{R}
+
+players_20$number_tags_proc <- str_count(players_20$player_tags, ",")
+players_20$number_tags <- ifelse(players_20$number_tags_proc == 0,0,players_20$number_tags_proc + 1)
+
+players_20$number_tags_proc <- NULL
+
+players_20$number_tags[is.na(players_20$number_tags)] <- 0
+
+```
+
+```{R}
+players_20$player_positions <- sub(",.*","",players_20$player_positions)
+```
+
