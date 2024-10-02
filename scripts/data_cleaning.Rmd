@@ -15,15 +15,21 @@ library(stringr)
 ```
 
 ```{R import}
+set.seed(123)
 
 players_20_raw <- read_csv("../data/raw_data/players_20.csv")
 players_20_raw <- players_20_raw %>% filter(player_positions != "GK")
 
-players_20 <- players_20_raw |> select(
+rows_to_keep <- floor(0.3 * nrow(players_20_raw))
+sampled_rows <- sample(1:nrow(players_20_raw), size = rows_to_keep)
+player_20_reduced <- players_20_raw[sampled_rows, ]
+
+
+players_20 <- player_20_reduced |> select(
   short_name,
   age,
   height_cm,
-  weight_kg,
+  weight_kg, 
   nationality,
   club,
   overall,
@@ -81,14 +87,14 @@ players_20$player_positions <- sub(",.*","",players_20$player_positions)
 
 ###overall try fit
 ```{R}
-fit_rating = lm(overall ~ value_eur + wage_eur + international_reputation +pace
+fit_rating = lm(overall ~ age + value_eur + wage_eur + international_reputation +pace
   + shooting +passing + dribbling + defending + physic, data = players_20)
 
 ```
 
 ```{R}
 fitted_value = fitted(fit_rating)
-plot(fitted_value,players_20$overall, xlim=c(50,90))
+plot(fitted_value,players_20$overall, xlim=c(50,100))
 abline(0, 1, col='blue')
 ```
 
@@ -97,9 +103,10 @@ residual = resid(fit_rating)
 plot(fitted_value, residual, xlim=c(50, 85))
 plot(fit_rating, which = 2)
 ```
+
 ###player value fit
 ```{R}
-fit_value = lm(value_eur ~ overall + wage_eur + international_reputation +pace
+fit_value = lm(value_eur ~ overall + age + wage_eur + international_reputation +pace
   + shooting +passing + dribbling + defending + physic, data = players_20)
 
 fitted_value = fitted(fit_value)
