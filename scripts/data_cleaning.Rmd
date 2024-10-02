@@ -90,7 +90,7 @@ players_20$player_positions <- sub(",.*","",players_20$player_positions)
 
 ###Write as csv file in data/cleaned_data
 ```{r}
-write.csv(players_20, "data/cleaned_data/cleaned_data.csv")
+write.csv(players_20, "../data/cleaned_data/cleaned_data.csv")
 ```
 
 ###overall try fit
