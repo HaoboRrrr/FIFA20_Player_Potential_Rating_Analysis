@@ -28,7 +28,7 @@ library(knitr)
 
 
 # Data Description
-
+The data of players in FIFA20 was originally found on Kaggle https://www.kaggle.com/datasets/stefanoleone992/fifa-20-complete-player-dataset?select=players_20.csv, it was scraped from the publicly available website using python script https://sofifa.com. \newline
 
 # Preliminary Results
 
