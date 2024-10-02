@@ -103,7 +103,46 @@ residual = resid(fit_rating)
 plot(fitted_value, residual, xlim=c(50, 85))
 plot(fit_rating, which = 2)
 ```
+###try better fit for overall rating
+```{R}
 
+
+fit_rating_improved <- lm(overall ~ age + wage_eur + international_reputation + pace + 
+                          shooting + passing + dribbling + physic, data = players_20)
+summary(fit_rating_improved)
+
+# Step 3: Introduce interaction terms and polynomial terms
+fit_rating_poly <- lm(overall ~ poly(age, 2) + wage_eur * international_reputation + pace +
+                      shooting + passing + dribbling + physic, data = players_20)
+summary(fit_rating_poly)
+
+
+```
+```{R}
+fit_rating_stepwise <- step(fit_rating_poly, direction = "both")
+summary(fit_rating_stepwise)
+
+players_20$log_value_eur <- log(players_20$value_eur + 1)
+players_20$log_wage_eur <- log(players_20$wage_eur + 1)
+
+fit_rating_log <- lm(overall ~ poly(age, 2) + log_wage_eur * international_reputation + 
+                     pace + shooting + passing + dribbling + physic, data = players_20)
+summary(fit_rating_log)
+
+```
+###try to fit the best model (poly(age, 2))
+```{R}
+
+
+fit_rating_better = lm(overall ~ age + wage_eur + international_reputation +passing + physic, data = players_20)
+fitted_value = fitted(fit_rating_better)
+plot(fitted_value,players_20$overall, xlim=c(50,100))
+abline(0, 1, col='blue')
+residual = resid(fit_rating_better)
+plot(fitted_value, residual, xlim=c(50, 100))
+plot(fit_rating_better, which = 2)
+
+```
 ###player value fit
 ```{R}
 fit_value = lm(value_eur ~ overall + age + wage_eur + international_reputation +pace
