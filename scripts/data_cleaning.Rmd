@@ -1,3 +1,4 @@
+
 ---
 title: "data_cleaning"
 output: pdf_document
@@ -85,6 +86,13 @@ players_20$number_tags[is.na(players_20$number_tags)] <- 0
 players_20$player_positions <- sub(",.*","",players_20$player_positions)
 ```
 
+
+
+###Write as csv file in data/cleaned_data
+```{r}
+write.csv(players_20, "data/cleaned_data/cleaned_data.csv")
+```
+
 ###overall try fit
 ```{R}
 fit_rating = lm(overall ~ age + value_eur + wage_eur + international_reputation +pace
@@ -117,4 +125,5 @@ abline(0, 1, col='blue')
 ```{R}
 residual = resid(fit_value)
 plot(fitted_value, residual, xlim=c(0, 2e7))
+
 ```
