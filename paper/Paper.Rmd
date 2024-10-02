@@ -1,0 +1,13 @@
+---
+title: The Decedents of Shelter Residents in Toronto by Year
+author: "Yizhuo Liu, Leo Cheng, Haobo Ren"
+date: "October-02-2024"
+output: pdf_document
+subtitle: The Decedents significantly increased during the pandemic
+date-format: long
+abstract: Study of the number of decedents of shelter residents in Toronto by year.
+format: pdf
+number-sections: true
+bibliography: references.bib
+thanks: 'Code and data are available at: https://github.com/HaoboRrrr/The_total_decedents_of_shelter_residents_in_Toronto/tree/main/paper'
+---
