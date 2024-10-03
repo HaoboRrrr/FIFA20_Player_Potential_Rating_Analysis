@@ -24,11 +24,70 @@ library(knitr)
 # Contributions
 
 
-# Introduction
+# 1 Introduction
 
 
-# Data Description
+# 2 Data Description
 The data of players in FIFA20 was originally found on Kaggle https://www.kaggle.com/datasets/stefanoleone992/fifa-20-complete-player-dataset?select=players_20.csv, it was scraped from the publicly available website using python script https://sofifa.com. \newline
+
+## Responsive Varible
+The response variable used in this research was "overall", it is the overall attribute of one player. This variable measures the players overall rating in the game, ranging from 0 to 100.\newline
+
+Table 1: Statistics of overall \newline
+```{r}
+#| fig-cap: Statistical analysis of "overall'
+#| echo: false
+#| message: false
+#| warning: false
+#| information: false
+
+data <- read.csv("../data/cleaned_data/cleaned_data.csv")
+summary_stats <- summary(data$overall)
+summary_stats
+```
+The mean of the overall is 66.43 \newline
+
+
+## Linear Assumptions
+
+The responsive variable "overall" is the overall rating of one player, we believe the overall rating of a player is largely influenced by their attributes like age, wages, pace score, shooting score and so on. When the player gets higher score in these attribute, their overall rating should also be higher. We think the changes in predictors should result in proportional changes in the response variable.
+
+```{R}
+#| echo: false
+#| message: false
+#| warning: false
+#| information: false
+#| fig-cap: Response against predictor test
+plot(data[, c(2,3,4,5,6,7)])
+```
+The response variable has a linear relationship with the predictor variables, meaning that as the predictors change, the response variable changes in a consistent, straight-line fashion.\newline
+
+```{R}
+#| echo: false
+#| message: false
+#| warning: false
+#| information: false
+#| fig-cap: Residual against fitted value test
+fit_rating = lm(overall ~ age + wage_eur + international_reputation +passing + physic, data = data)
+fitted_value = fitted(fit_rating)
+residual = resid(fit_rating)
+plot(fitted_value, residual, xlim=c(50, 100))
+```
+The residuals are independent, meaning that the error in one observation doesn’t affect the error in another
+
+```{R}
+#| echo: false
+#| message: false
+#| warning: false
+#| information: false
+#| fig-cap: Response against fitted value test
+
+
+plot(fitted_value,data$overall, xlim=c(50,100))
+
+
+```
+points closely follow the 45-degree line (i.e., observed ≈ predicted), the model is likely performing well.
 
 # Preliminary Results
 
