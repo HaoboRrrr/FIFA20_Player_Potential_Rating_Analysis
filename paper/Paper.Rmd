@@ -11,15 +11,13 @@ number-sections: true
 bibliography: references.bib
 thanks: 'Code and data are available at: https://github.com/HaoboRrrr/FIFA20_Player_Potential_Rating_Analysis/tree/main'
 ---
-```{r}
-#| include: false
-#| warning: false
-#| message: false
 
+```{r setup, include = FALSE}
 library(tidyverse)
 library(knitr)
-```
+knitr::opts_chunk$set(fig.pos = 'H', echo = FALSE, message = FALSE, warning = FALSE)
 
+```
 
 # Contributions
 
@@ -33,63 +31,99 @@ The data of players in FIFA20 was originally found on Kaggle https://www.kaggle.
 ## Responsive Varible
 The response variable used in this research was "overall", it is the overall attribute of one player. This variable measures the players overall rating in the game, ranging from 0 to 100.\newline
 
-Table 1: Statistics of overall \newline
-```{r}
+```{r, fig.cap="This is a caption for my code chunk."}
+#| lable: fig-data
 #| fig-cap: Statistical analysis of "overall'
 #| echo: false
-#| message: false
 #| warning: false
 #| information: false
 
+
 data <- read.csv("../data/cleaned_data/cleaned_data.csv")
-summary_stats <- summary(data$overall)
-summary_stats
+summary_stats <- data.frame(
+  min = min(data$overall),
+  max = max(data$overall),
+  mean = mean(data$overall),
+  median = median(data$overall),
+  standard_deviation = sd(data$overall)
+)
+kable(summary_stats, caption = "Descriptive Statistic of Response Variable")
 ```
 The mean of the overall is 66.43 \newline
 
+## Model Assumptions
 
-## Linear Assumptions
+The responsive variable "overall" is the overall rating of one player, we believe the overall rating of a player is largely influenced by their attributes like age, wages, pace score, shooting score and so on. When the player gets higher score in these attribute, their overall rating should also be higher. We think the changes in predictors should result in proportional changes in the response variable.\newline
 
-The responsive variable "overall" is the overall rating of one player, we believe the overall rating of a player is largely influenced by their attributes like age, wages, pace score, shooting score and so on. When the player gets higher score in these attribute, their overall rating should also be higher. We think the changes in predictors should result in proportional changes in the response variable.
-
-```{R}
+```{r, fig.pos = "H" }
 #| echo: false
 #| message: false
 #| warning: false
 #| information: false
-#| fig-cap: Response against predictor test
-plot(data[, c(2,3,4,5,6,7)])
+plot(data[, c(2,3,4,5,6,7)], main="Response against predictor")
 ```
-The response variable has a linear relationship with the predictor variables, meaning that as the predictors change, the response variable changes in a consistent, straight-line fashion.\newline
-
-```{R}
+\newline
+The response variable has a linear relationship with some of the predictor variables. meaning that as the predictors change, the response variable changes in a consistent, straight-line fashion. The mean of each predictor is related to each other predictor in no more complicated way than linearly. \newline
+```{R, fig.height=3, fig.width=4}
 #| echo: false
 #| message: false
 #| warning: false
 #| information: false
-#| fig-cap: Residual against fitted value test
 fit_rating = lm(overall ~ age + wage_eur + international_reputation +passing + physic, data = data)
 fitted_value = fitted(fit_rating)
 residual = resid(fit_rating)
-plot(fitted_value, residual, xlim=c(50, 100))
+plot(fitted_value, residual, xlim=c(50, 100), main = "Residual against fitted value")
 ```
-The residuals are independent, meaning that the error in one observation doesn’t affect the error in another
-
-```{R}
+\newline
+The residual plot has some outlier on the right side, but overall the plot doesn't show a clear patern. This implies the population satisifies Linearity, constant variance, and uncorrelated errors assumptions.\newline
+```{R, fig.height=3, fig.width=4}
 #| echo: false
 #| message: false
 #| warning: false
 #| information: false
 #| fig-cap: Response against fitted value test
-
-
-plot(fitted_value,data$overall, xlim=c(50,100))
-
-
+plot(fitted_value,data$overall, xlim=c(50,100), main = "Response against fitted value")
 ```
-points closely follow the 45-degree line (i.e., observed ≈ predicted), the model is likely performing well.
+\newline
+Points closely follow the 45-degree line (i.e., observed $\approx$ predicted), the model is likely performing well. The mean responses are a single function of a linear combination involving coefficients. This satisfies conditional mean response condition.\newline
+
+
+```{R, fig.height=3, fig.width=4}
+#| echo: false
+#| message: false
+#| warning: false
+#| information: false
+
+plot(fit_rating, which = 2)
+```
+\newline
+The most points on the QQ plot are on a straight line, with some outliers on each side. Overall this implies the population satisfies the normal errors assumption.\newline
+
+\newpage
+## Predictors
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| information: false
+
+
+summary_table <- data.frame(
+  predictors = c("age", "wage_eur", "international_reputation", "passing", "physic"),
+  min = c(min(data$age),min(data$wage_eur), min(data$international_reputation), min(data$passing), min(data$physic)),
+  max = c(max(data$age),max(data$wage_eur), max(data$international_reputation), max(data$passing), max(data$physic)),
+  mean = c(mean(data$age),mean(data$wage_eur), mean(data$international_reputation), mean(data$passing), mean(data$physic)),
+  median = c(median(data$age),median(data$wage_eur), median(data$international_reputation), median(data$passing), median(data$physic)),
+  standard_deviation = c(sd(data$age),sd(data$wage_eur), sd(data$international_reputation), sd(data$passing), sd(data$physic))
+)
+
+kable(summary_table, caption = "Descriptive Statistic of Predictors")
+```
+
+
 
 # Preliminary Results
+
 
 
 \newpage
