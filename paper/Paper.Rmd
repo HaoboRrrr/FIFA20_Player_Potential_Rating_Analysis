@@ -29,6 +29,8 @@ knitr::opts_chunk$set(fig.pos = 'H', echo = FALSE, message = FALSE, warning = FA
 # 2 Data Description
 The data of players in FIFA20 was originally found on Kaggle https://www.kaggle.com/datasets/stefanoleone992/fifa-20-complete-player-dataset?select=players_20.csv. The data of the players was collected by EA throughout the year based the players' performance in game. 
 
+The column selected is overall, shooting, passing, physic, wage and international_reputation. We eliminated all goal keepers and randomly selected 30% of original observation, and replaced 0 salary with 1 to analyse.
+
 ## Responsive Varible
 The response variable used in this research was "overall", it is the overall attribute of one player. This variable measures the players overall rating in the game, ranging from 0 to 100. 
 
@@ -53,8 +55,6 @@ kable(summary_stats, caption = "Descriptive Statistic of Response Variable")
 ```
 The mean of the overall is 66.43 
 
-## Model Assumptions
-
 The responsive variable "overall" is the overall rating of one player. We believe the overall rating of a player is largely influenced by their attributes like shooting, wages, international_reputation, passing, physic. As our understanding to soccer, when the player gets higher score in these attribute, their overall rating should also be higher. We think the changes in predictors should result in proportional changes in the response variable. Therefore, we take overall as the responsive variable is appropriate.
 
 
@@ -71,55 +71,6 @@ summary(p)
 
 The response variable has an approximately linear relationship with some of the predictor variables. meaning that as the predictors change, the response variable changes in a consistent, straight-line fashion. The international_reputation was originally a continuous predictor ranging from 1 to 5, we changed it to categorical predictor with 4 level(2, 3, 4, 5). By looking at the Box-cox transformation, we noticed that we need to apply transformations to the predictors to improve our model. Here we take wage_eur a fouth-root transformation, take passing to power of 2, physic to the power of 2 for simplicity purpose.
 
-
-```{R}
-#| echo: false
-#| message: false
-#| warning: false
-#| information: false
-
-transform_data$international_reputation <- as.factor(transform_data$international_reputation)
-transform_data$wage_eur_transformed <- transform_data$wage_eur^0.25
-transform_data$physic_transformed <- transform_data$physic^2
-transform_data$passing_transformed <- transform_data$passing^2
-
-fit_rating = lm(overall ~ shooting + wage_eur_transformed + international_reputation + passing_transformed + physic_transformed, data = transform_data)
-fitted_value = fitted(fit_rating)
-residual = resid(fit_rating)
-plot(fitted_value, residual, xlim=c(50, 100), main = "Residual against fitted value")
-summary(fit_rating)
-```
-
-
-The residual plot has some outlier on the right side, but overall the plot doesn't show a clear patern. This implies the population satisifies Linearity, constant variance, and uncorrelated errors assumptions.
-
-
-```{R}
-#| echo: false
-#| message: false
-#| warning: false
-#| information: false
-#| fig-cap: Response against fitted value test
-plot(fitted_value,data$overall, xlim=c(50,100), main = "Response against fitted value")
-```
-
-Points closely follow the 45-degree line (i.e., observed $\approx$ predicted), the model is likely performing well. The mean responses are a single function of a linear combination involving coefficients. This satisfies Linear assumption.
-
-
-
-```{R}
-#| echo: false
-#| message: false
-#| warning: false
-#| information: false
-
-plot(fit_rating, which = 2)
-```
-
-The most points on the QQ plot are on a straight line, with some outliers on each side. Overall this implies the population satisfies the normal errors assumption.
-
-
-\newpage
 ## Predictors
 ```{r}
 #| echo: false
@@ -152,14 +103,61 @@ hist(data$physic, main = "physic Histogram")
 * international_reputation measures the player's popularity in the world.
 * passing measures the player's passing ability, include strength, accuracy etc.
 * physic measures the player's physical condition, include stamina, jumping etc.
-A higher score means the player is better at this aspect.
-Each of these predictor 
+
 Through the graph we can see that the distribution of passing is approximately normal, physic and shooting are slightly left skewed, international reputation and wage are extremely right skewed.
+
+Each of these predictor contributes to the construction of the overall rating, a higher score means the player is better at this aspect, which should make the overall rating higher.
+
 
 
 # Preliminary Results
 
+## Model Assumptions
+```{R}
+#| echo: false
+#| message: false
+#| warning: false
+#| information: false
 
+transform_data$international_reputation <- as.factor(transform_data$international_reputation)
+transform_data$wage_eur_transformed <- transform_data$wage_eur^0.25
+transform_data$physic_transformed <- transform_data$physic^2
+transform_data$passing_transformed <- transform_data$passing^2
+
+fit_rating = lm(overall ~ shooting + wage_eur_transformed + international_reputation + passing_transformed + physic_transformed, data = transform_data)
+fitted_value = fitted(fit_rating)
+residual = resid(fit_rating)
+plot(fitted_value, residual, xlim=c(50, 100), main = "Residual against fitted value")
+summary(fit_rating)
+```
+
+
+The residual plot has some outlier on the right side, but overall the plot doesn't show a clear patern. This implies the population satisifies Linearity, constant variance, and uncorrelated errors assumptions.
+
+
+
+```{R}
+#| echo: false
+#| message: false
+#| warning: false
+#| information: false
+#| fig-cap: Response against fitted value test
+plot(fitted_value,data$overall, xlim=c(50,100), main = "Response against fitted value")
+```
+
+Points closely follow the 45-degree line (i.e., observed $\approx$ predicted), the model is likely performing well. The mean responses are a single function of a linear combination involving coefficients. This satisfies Linear assumption.
+
+
+```{R}
+#| echo: false
+#| message: false
+#| warning: false
+#| information: false
+
+plot(fit_rating, which = 2)
+```
+
+The most points on the QQ plot are on a straight line, with some outliers on each side. Overall this implies the population satisfies the normal errors assumption.
 
 \newpage
 
