@@ -147,6 +147,14 @@ hist(data$passing, main =  "Passing Histogram")
 hist(data$physic, main = "physic Histogram")
 ```
 
+* shooting measures the player's shooting ability, include strength, accuracy etc.
+* wage_eur measures the player's weekly salary in Euro.
+* international_reputation measures the player's popularity in the world.
+* passing measures the player's passing ability, include strength, accuracy etc.
+* physic measures the player's physical condition, include stamina, jumping etc.
+A higher score means the player is better at this aspect.
+Each of these predictor 
+Through the graph we can see that the distribution of passing is approximately normal, physic and shooting are slightly left skewed, international reputation and wage are extremely right skewed.
 
 
 # Preliminary Results
