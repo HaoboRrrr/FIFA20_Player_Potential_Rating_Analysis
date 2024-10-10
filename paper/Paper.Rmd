@@ -15,6 +15,7 @@ thanks: 'Code and data are available at: https://github.com/HaoboRrrr/FIFA20_Pla
 ```{r setup, include = FALSE}
 library(tidyverse)
 library(knitr)
+library(car)
 knitr::opts_chunk$set(fig.pos = 'H', echo = FALSE, message = FALSE, warning = FALSE)
 
 ```
@@ -26,10 +27,10 @@ knitr::opts_chunk$set(fig.pos = 'H', echo = FALSE, message = FALSE, warning = FA
 
 
 # 2 Data Description
-The data of players in FIFA20 was originally found on Kaggle https://www.kaggle.com/datasets/stefanoleone992/fifa-20-complete-player-dataset?select=players_20.csv, it was scraped from the publicly available website using python script https://sofifa.com. \newline
+The data of players in FIFA20 was originally found on Kaggle https://www.kaggle.com/datasets/stefanoleone992/fifa-20-complete-player-dataset?select=players_20.csv. The data of the players was collected by EA throughout the year based the players' performance in game. 
 
 ## Responsive Varible
-The response variable used in this research was "overall", it is the overall attribute of one player. This variable measures the players overall rating in the game, ranging from 0 to 100.\newline
+The response variable used in this research was "overall", it is the overall attribute of one player. This variable measures the players overall rating in the game, ranging from 0 to 100. 
 
 ```{r, fig.cap="This is a caption for my code chunk."}
 #| lable: fig-data
@@ -40,6 +41,7 @@ The response variable used in this research was "overall", it is the overall att
 
 
 data <- read.csv("../data/cleaned_data/cleaned_data.csv")
+transform_data <- data
 summary_stats <- data.frame(
   min = min(data$overall),
   max = max(data$overall),
@@ -49,11 +51,12 @@ summary_stats <- data.frame(
 )
 kable(summary_stats, caption = "Descriptive Statistic of Response Variable")
 ```
-The mean of the overall is 66.43 \newline
+The mean of the overall is 66.43 
 
 ## Model Assumptions
 
-The responsive variable "overall" is the overall rating of one player, we believe the overall rating of a player is largely influenced by their attributes like age, wages, pace score, shooting score and so on. When the player gets higher score in these attribute, their overall rating should also be higher. We think the changes in predictors should result in proportional changes in the response variable.\newline
+The responsive variable "overall" is the overall rating of one player. We believe the overall rating of a player is largely influenced by their attributes like shooting, wages, international_reputation, passing, physic. As our understanding to soccer, when the player gets higher score in these attribute, their overall rating should also be higher. We think the changes in predictors should result in proportional changes in the response variable. Therefore, we take overall as the responsive variable is appropriate.
+
 
 ```{r, fig.pos = "H" }
 #| echo: false
@@ -61,22 +64,37 @@ The responsive variable "overall" is the overall rating of one player, we believ
 #| warning: false
 #| information: false
 plot(data[, c(2,3,4,5,6,7)], main="Response against predictor")
+data$wage_eur[data$wage_eur == 0] <- 1
+p<-powerTransform(cbind(data[, 2:7]))
+summary(p)
 ```
-\newline
-The response variable has a linear relationship with some of the predictor variables. meaning that as the predictors change, the response variable changes in a consistent, straight-line fashion. The mean of each predictor is related to each other predictor in no more complicated way than linearly. \newline
-```{R, fig.height=3, fig.width=4}
+
+The response variable has an approximately linear relationship with some of the predictor variables. meaning that as the predictors change, the response variable changes in a consistent, straight-line fashion. The international_reputation was originally a continuous predictor ranging from 1 to 5, we changed it to categorical predictor with 4 level(2, 3, 4, 5). By looking at the Box-cox transformation, we noticed that we need to apply transformations to the predictors to improve our model. Here we take wage_eur a fouth-root transformation, take passing to power of 2, physic to the power of 2 for simplicity purpose.
+
+
+```{R}
 #| echo: false
 #| message: false
 #| warning: false
 #| information: false
-fit_rating = lm(overall ~ age + wage_eur + international_reputation +passing + physic, data = data)
+
+transform_data$international_reputation <- as.factor(transform_data$international_reputation)
+transform_data$wage_eur_transformed <- transform_data$wage_eur^0.25
+transform_data$physic_transformed <- transform_data$physic^2
+transform_data$passing_transformed <- transform_data$passing^2
+
+fit_rating = lm(overall ~ shooting + wage_eur_transformed + international_reputation + passing_transformed + physic_transformed, data = transform_data)
 fitted_value = fitted(fit_rating)
 residual = resid(fit_rating)
 plot(fitted_value, residual, xlim=c(50, 100), main = "Residual against fitted value")
+summary(fit_rating)
 ```
-\newline
-The residual plot has some outlier on the right side, but overall the plot doesn't show a clear patern. This implies the population satisifies Linearity, constant variance, and uncorrelated errors assumptions.\newline
-```{R, fig.height=3, fig.width=4}
+
+
+The residual plot has some outlier on the right side, but overall the plot doesn't show a clear patern. This implies the population satisifies Linearity, constant variance, and uncorrelated errors assumptions.
+
+
+```{R}
 #| echo: false
 #| message: false
 #| warning: false
@@ -84,11 +102,12 @@ The residual plot has some outlier on the right side, but overall the plot doesn
 #| fig-cap: Response against fitted value test
 plot(fitted_value,data$overall, xlim=c(50,100), main = "Response against fitted value")
 ```
-\newline
-Points closely follow the 45-degree line (i.e., observed $\approx$ predicted), the model is likely performing well. The mean responses are a single function of a linear combination involving coefficients. This satisfies conditional mean response condition.\newline
+
+Points closely follow the 45-degree line (i.e., observed $\approx$ predicted), the model is likely performing well. The mean responses are a single function of a linear combination involving coefficients. This satisfies Linear assumption.
 
 
-```{R, fig.height=3, fig.width=4}
+
+```{R}
 #| echo: false
 #| message: false
 #| warning: false
@@ -96,8 +115,9 @@ Points closely follow the 45-degree line (i.e., observed $\approx$ predicted), t
 
 plot(fit_rating, which = 2)
 ```
-\newline
-The most points on the QQ plot are on a straight line, with some outliers on each side. Overall this implies the population satisfies the normal errors assumption.\newline
+
+The most points on the QQ plot are on a straight line, with some outliers on each side. Overall this implies the population satisfies the normal errors assumption.
+
 
 \newpage
 ## Predictors
@@ -107,17 +127,24 @@ The most points on the QQ plot are on a straight line, with some outliers on eac
 #| warning: false
 #| information: false
 
+par(mfrow=c(2,3))
 
 summary_table <- data.frame(
-  predictors = c("age", "wage_eur", "international_reputation", "passing", "physic"),
-  min = c(min(data$age),min(data$wage_eur), min(data$international_reputation), min(data$passing), min(data$physic)),
-  max = c(max(data$age),max(data$wage_eur), max(data$international_reputation), max(data$passing), max(data$physic)),
-  mean = c(mean(data$age),mean(data$wage_eur), mean(data$international_reputation), mean(data$passing), mean(data$physic)),
-  median = c(median(data$age),median(data$wage_eur), median(data$international_reputation), median(data$passing), median(data$physic)),
-  standard_deviation = c(sd(data$age),sd(data$wage_eur), sd(data$international_reputation), sd(data$passing), sd(data$physic))
+  predictors = c("shooting", "wage_eur", "international_reputation", "passing", "physic"),
+  min = c(min(data$shooting),min(data$wage_eur), min(data$international_reputation), min(data$passing), min(data$physic)),
+  max = c(max(data$shooting),max(data$wage_eur), max(data$international_reputation), max(data$passing), max(data$physic)),
+  mean = c(mean(data$shooting),mean(data$wage_eur), mean(data$international_reputation), mean(data$passing), mean(data$physic)),
+  median = c(median(data$shooting),median(data$wage_eur), median(data$international_reputation), median(data$passing), median(data$physic)),
+  standard_deviation = c(sd(data$shooting),sd(data$wage_eur), sd(data$international_reputation), sd(data$passing), sd(data$physic))
 )
 
 kable(summary_table, caption = "Descriptive Statistic of Predictors")
+
+hist(data$shooting, main = "Shooting Histogram")
+hist(data$wage_eur, main = "Wage_eur Histogram")
+hist(data$international_reputation, main = "International reputation Histogram")
+hist(data$passing, main =  "Passing Histogram")
+hist(data$physic, main = "physic Histogram")
 ```
 
 
