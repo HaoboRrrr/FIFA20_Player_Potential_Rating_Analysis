@@ -27,12 +27,12 @@ knitr::opts_chunk$set(fig.pos = 'H', echo = FALSE, message = FALSE, warning = FA
 
 
 # 2 Data Description
-The data of players in FIFA20 was originally found on Kaggle https://www.kaggle.com/datasets/stefanoleone992/fifa-20-complete-player-dataset?select=players_20.csv. The data of the players was collected by EA throughout the year based the players' performance in game. 
+The data of players in FIFA20 was originally found on Kaggle. The data of the players was collected by EA throughout the year based the players' performance in game. 
 
-The column selected is overall, shooting, passing, physic, wage and international_reputation. We eliminated all goal keepers and randomly selected 30% of original observation, and replaced 0 salary with 1 to analyse.
+The column selected is overall, shooting, passing, physic, wage and international_reputation. We eliminated goal keepers and randomly selected 30% of observations, and replaced 0 salary with 1 to analyse.
 
 ## Responsive Varible
-The response variable used in this research was "overall", it is the overall attribute of one player. This variable measures the players overall rating in the game, ranging from 0 to 100. 
+The response used in this research was "overall", it is the overall attribute of one player. This variable measures the players overall rating in the game, ranging from 0 to 100. 
 
 ```{r, fig.cap="This is a caption for my code chunk."}
 #| lable: fig-data
@@ -55,7 +55,7 @@ kable(summary_stats, caption = "Descriptive Statistic of Response Variable")
 ```
 The mean of the overall is 66.43 
 
-The responsive variable "overall" is the overall rating of one player. We believe the overall rating of a player is largely influenced by their attributes like shooting, wages, international_reputation, passing, physic. As our understanding to soccer, when the player gets higher score in these attribute, their overall rating should also be higher. We think the changes in predictors should result in proportional changes in the response variable. Therefore, we take overall as the responsive variable is appropriate.
+We believe the overall of a player is influenced by their attributes which we selected. As our understanding to soccer,player's overall rating should be higher if the player gets higher score in these attribute. We think the changes in predictors should result in proportional changes in the response variable. Therefore, we take overall as the responsive variable.
 
 
 ```{r, fig.pos = "H" }
@@ -64,13 +64,10 @@ The responsive variable "overall" is the overall rating of one player. We believ
 #| warning: false
 #| information: false
 plot(data[, c(2,3,4,5,6,7)], main="Response against predictor")
-data$wage_eur[data$wage_eur == 0] <- 1
-p<-powerTransform(cbind(data[, 2:7]))
-summary(p)
+
 ```
 
-The response variable has an approximately linear relationship with some of the predictor variables. meaning that as the predictors change, the response variable changes in a consistent, straight-line fashion. The international_reputation was originally a continuous predictor ranging from 1 to 5, we changed it to categorical predictor with 4 level(2, 3, 4, 5). By looking at the Box-cox transformation, we noticed that we need to apply transformations to the predictors to improve our model. Here we take wage_eur a fouth-root transformation, take passing to power of 2, physic to the power of 2 for simplicity purpose.
-
+The response variable has an approximately linear relationship with some of the predictor variables. Meaning that as the predictors change, the response variable changes in a consistent, straight-line fashion. The international_reputation was originally a continuous predictor ranging from 1 to 5, we changed it to categorical predictor with 4 levels. 
 ## Predictors
 ```{r}
 #| echo: false
@@ -97,12 +94,12 @@ hist(data$international_reputation, main = "International reputation Histogram")
 hist(data$passing, main =  "Passing Histogram")
 hist(data$physic, main = "physic Histogram")
 ```
-
-* shooting measures the player's shooting ability, include strength, accuracy etc.
-* wage_eur measures the player's weekly salary in Euro.
-* international_reputation measures the player's popularity in the world.
-* passing measures the player's passing ability, include strength, accuracy etc.
-* physic measures the player's physical condition, include stamina, jumping etc.
+Attributes(predictor) of overall:
+* shooting: shooting ability, include strength, accuracy etc.
+* wage_eur: weekly salary in Euro.
+* international_reputation: popularity in the world.
+* passing: passing ability, include strength, accuracy etc.
+* physic: physical condition, include stamina, jumping etc.
 
 Through the graph we can see that the distribution of passing is approximately normal, physic and shooting are slightly left skewed, international reputation and wage are extremely right skewed.
 
@@ -113,6 +110,16 @@ Each of these predictor contributes to the construction of the overall rating, a
 # Preliminary Results
 
 ## Model Assumptions
+
+```{r}
+data$wage_eur[data$wage_eur == 0] <- 1
+p<-powerTransform(cbind(data[, 2:7]))
+summary(p)
+```
+
+By looking at the Box-cox transformation, we noticed that we need to apply transformations to the predictors to improve our model: wage_eur^0.25, passing^2, physic^2 for simplicity purpose.
+
+
 ```{R}
 #| echo: false
 #| message: false
