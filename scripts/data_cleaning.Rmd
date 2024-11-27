@@ -64,9 +64,26 @@ players_20$Top_country <- ifelse(players_20$nationality %in% c("Belgium", "Franc
                                "Other"))
 
 
-players_20$Top_Club  <- ifelse(players_20$club %in% c("Real Madrid","FC Barcelona","Bayern Munich","Atlético Madrid","Juventus","Manchester City","Paris Saint-Germain","Liverpool","Sevilla FC","Arsenal"),"Top_10",
-                         ifelse(players_20$club %in% c("Borussia Dortmund","Manchester United","Chelsea FC","FC Porto","Tottenham Hotspur","AS Roma","Napoli","Benfica","Shakhtar Donetsk","Zenit St. Petersburg"),"Top_20","other")
-)
+players_20 <- players_20 %>%
+  mutate(
+    Top_Club = case_when(
+      club %in% c(
+        "FC Bayern München", "Real Madrid", "FC Barcelona", "Atlético Madrid",
+        "Juventus", "Manchester City", "Paris Saint-Germain", "Sevilla FC",
+        "Manchester United", "Liverpool"
+      ) ~ "Top_10",
+      club %in% c(
+        "Arsenal", "Shakhtar Donetsk", "Borussia Dortmund", "Tottenham Hotspur",
+        "Olympique Lyonnais", "Chelsea", "Roma", "Napoli", "FC Porto", "SL Benfica"
+      ) ~ "Top_20",
+      club %in% c(
+        "Ajax", "Bayer 04 Leverkusen", "FC Basel 1893", "Villarreal CF",
+        "Dynamo Kyiv", "Valencia CF", "Beşiktaş JK", "FC Red Bull Salzburg",
+        "Sporting CP", "RB Leipzig"
+      ) ~ "Top_30",
+      TRUE ~ "other"
+    )
+  )
 
 ```
 
@@ -86,8 +103,9 @@ players_20$number_tags[is.na(players_20$number_tags)] <- 0
 players_20$player_positions <- sub(",.*","",players_20$player_positions)
 ```
 
-
-
+```{R}
+players_20
+```
 
 
 ###overall try fit
