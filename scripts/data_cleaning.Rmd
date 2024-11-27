@@ -88,10 +88,7 @@ players_20$player_positions <- sub(",.*","",players_20$player_positions)
 
 
 
-###Write as csv file in data/cleaned_data
-```{r}
-write.csv(players_20, "data/cleaned_data/cleaned_data.csv")
-```
+
 
 ###overall try fit
 ```{R}
@@ -140,9 +137,9 @@ summary(fit_rating_log)
 ```
 ###try to fit the best model (poly(age, 2))
 ```{R}
+final_data <- players_20 |> select(overall, shooting, wage_eur, international_reputation, passing, physic)
 
-
-fit_rating_better = lm(overall ~ poly(age, 2) + wage_eur + international_reputation +passing + physic, data = players_20)
+fit_rating_better = lm(overall ~ shooting + wage_eur + international_reputation +passing + physic, data = final_data)
 fitted_value = fitted(fit_rating_better)
 plot(fitted_value,players_20$overall, xlim=c(50,100))
 abline(0, 1, col='blue')
@@ -151,18 +148,8 @@ plot(fitted_value, residual, xlim=c(50, 100))
 plot(fit_rating_better, which = 2)
 
 ```
-###player value fit
-```{R}
-fit_value = lm(value_eur ~ overall + age + wage_eur + international_reputation +pace
-  + shooting +passing + dribbling + defending + physic, data = players_20)
 
-fitted_value = fitted(fit_value)
-plot(fitted_value,players_20$value_eur)
-abline(0, 1, col='blue')
-```
-
-```{R}
-residual = resid(fit_value)
-plot(fitted_value, residual, xlim=c(0, 2e7))
-
+###Write as csv file in data/cleaned_data
+```{r}
+write.csv(final_data, "../data/cleaned_data/cleaned_data.csv")
 ```

@@ -1,5 +1,5 @@
 ---
-title: 
+title: What factors influence the overall rating of soccer players in the FIFA video game
 author: "Yizhuo Liu, Leo Cheng, Haobo Ren"
 date: "October-02-2024"
 output: pdf_document
@@ -11,27 +11,167 @@ number-sections: true
 bibliography: references.bib
 thanks: 'Code and data are available at: https://github.com/HaoboRrrr/FIFA20_Player_Potential_Rating_Analysis/tree/main'
 ---
-```{r}
-#| include: false
-#| warning: false
-#| message: false
 
+```{r setup, include = FALSE}
 library(tidyverse)
 library(knitr)
+library(car)
+knitr::opts_chunk$set(fig.pos = 'H', echo = FALSE, message = FALSE, warning = FALSE)
+
 ```
 
-
 # Contributions
+Liu Yizhuo: Data cleaning, introduction \newline
+Leo Cheng: Preliminary result \newline
+Haobo Ren: Data description \newline
 
 
-# Introduction
+
+# 1 Introduction
+In the long history of soccer, there have been many ways of evaluating the performance of soccer players. Whether by the number of goals they score or the number of trophies they earn, but these are very unilateral methods that only favor a certain kind of player, not everyone, especially when it comes to unknown players.  Certainly, the video game franchise FIFA comes to mind. Every year FIFA evaluates professional soccer player's previous year's performance and gives them a rating from 0 to 100.  From 1993 to now, there has been a new FIFA game every single year, yet no one knows what factors influence the rating from FIFA that the majority of the people agree on. Therefore, the main objective of this report and the research question is going to be "What factors influence the overall rating of soccer players in the FIFA video game". If we can accomplish this objective, then we can use it to quantify players' performance. Therefore, use it to predict further performance and other stuff related to performance.  With our research question in mind, we proposed a hypothesis: factors such as shooting, wage, international reputation, passing, and physics will increase with the response variable - FIFA rating. To back up our hypothesis, the article "Predict the Value of Football Players Using FIFA Video Game Data and Machine Learning Techniques" (Al-Asadi and Tasdemır, 2022), which is on using FIFA to get a data-driven approach to player valuation, also uses very similar predictors that we have chosen, and the base model they end up using is also linear regression. In addition, in "PlayeRank: Data-driven Performance Evaluation and Player Ranking in Soccer via a Machine Learning Approach" (Pappalardo et al., 2019) they use real-world data to quantify players' performance with a reasonable success. Last but not least, the article "Predicting the Future Performance of Soccer Players" (Arndt and Brefeld, 2016), uses a combination of linear regression and multitask regression, to evaluate current player performance and predict the future to predict the outcome of a soccer game. Two out of the three articles have chosen linear regression, therefore it shows that linear regression is commonly used in this area. Also, by looking at the scatter plot for our response variables and predictions, there is a linear relationship.  By using linear regression method we are looking to get an accuracy prediction of FIFA rating.
 
 
-# Data Description
-The data of players in FIFA20 was originally found on Kaggle https://www.kaggle.com/datasets/stefanoleone992/fifa-20-complete-player-dataset?select=players_20.csv, it was scraped from the publicly available website using python script https://sofifa.com. \newline
+
+# 2 Data Description
+The data of players in FIFA20 was originally found on Kaggle. The data of the players was collected by EA throughout the year based the players' performance in game. 
+
+The column selected is overall, shooting, passing, physic, wage and international_reputation. We eliminated goal keepers and randomly selected 30% of observations, and replaced 0 salary with 1 to analyse.
+
+## Responsive Varible
+The response used in this research was "overall", it is the overall attribute of one player. This variable measures the players overall rating in the game, ranging from 0 to 100. 
+
+```{r, fig.cap="This is a caption for my code chunk."}
+#| lable: fig-data
+#| fig-cap: Statistical analysis of "overall'
+#| echo: false
+#| warning: false
+#| information: false
+
+
+data <- read.csv("../data/cleaned_data/cleaned_data.csv")
+transform_data <- data
+summary_stats <- data.frame(
+  min = min(data$overall),
+  max = max(data$overall),
+  mean = mean(data$overall),
+  median = median(data$overall),
+  standard_deviation = sd(data$overall)
+)
+kable(summary_stats, caption = "Descriptive Statistic of Response Variable")
+```
+The mean of the overall is 66.43 
+
+We believe the overall of a player is influenced by their attributes which we selected. As our understanding to soccer,player's overall rating should be higher if the player gets higher score in these attribute. We think the changes in predictors should result in proportional changes in the response variable. Therefore, we take overall as the responsive variable.
+
+
+```{r, fig.pos = "H" }
+#| echo: false
+#| message: false
+#| warning: false
+#| information: false
+plot(data[, c(2,3,4,5,6,7)], main="Response against predictor")
+
+```
+
+The response variable has an approximately linear relationship with some of the predictor variables. Meaning that as the predictors change, the response variable changes in a consistent, straight-line fashion. The international_reputation was originally a continuous predictor ranging from 1 to 5, we changed it to categorical predictor with 4 levels. 
+## Predictors
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| information: false
+
+par(mfrow=c(2,3))
+
+summary_table <- data.frame(
+  predictors = c("shooting", "wage_eur", "international_reputation", "passing", "physic"),
+  min = c(min(data$shooting),min(data$wage_eur), min(data$international_reputation), min(data$passing), min(data$physic)),
+  max = c(max(data$shooting),max(data$wage_eur), max(data$international_reputation), max(data$passing), max(data$physic)),
+  mean = c(mean(data$shooting),mean(data$wage_eur), mean(data$international_reputation), mean(data$passing), mean(data$physic)),
+  median = c(median(data$shooting),median(data$wage_eur), median(data$international_reputation), median(data$passing), median(data$physic)),
+  standard_deviation = c(sd(data$shooting),sd(data$wage_eur), sd(data$international_reputation), sd(data$passing), sd(data$physic))
+)
+
+kable(summary_table, caption = "Descriptive Statistic of Predictors")
+
+hist(data$shooting, main = "Shooting Histogram")
+hist(data$wage_eur, main = "Wage_eur Histogram")
+hist(data$international_reputation, main = "International reputation Histogram")
+hist(data$passing, main =  "Passing Histogram")
+hist(data$physic, main = "physic Histogram")
+```
+Attributes(predictor) of overall:
+* shooting: shooting ability, include strength, accuracy etc.
+* wage_eur: weekly salary in Euro.
+* international_reputation: popularity in the world.
+* passing: passing ability, include strength, accuracy etc.
+* physic: physical condition, include stamina, jumping etc.
+
+Through the graph we can see that the distribution of passing is approximately normal, physic and shooting are slightly left skewed, international reputation and wage are extremely right skewed.
+
+Each of these predictor contributes to the construction of the overall rating, a higher score means the player is better at this aspect, which should make the overall rating higher.
+
+
 
 # Preliminary Results
 
+```{r}
+data$wage_eur[data$wage_eur == 0] <- 1
+p<-powerTransform(cbind(data[, 2:7]))
+summary(p)
+```
+
+Inspired by (Al-Asadi and Tasdemır, 2022) and our understanding of soccer, we chose 5 predictors: shooting, wage, international reputation, passing and physics to fit a preliminary linear regression model. As usual, we produce several graphs on residuals, fitted values and QQ plots. First, the residuals and the above data visualization shows that there are 3 predictors that are inherently not linear, namely wage, physics and passing. We utilize the Box-Cox method to determine the transformation on the three predictors: exponential to 0.25, 2, 2 respectively.
+
+## Model Assumptions
+
+```{R}
+#| echo: false
+#| message: false
+#| warning: false
+#| information: false
+
+transform_data$international_reputation <- as.factor(transform_data$international_reputation)
+transform_data$wage_eur_transformed <- transform_data$wage_eur^0.25
+transform_data$physic_transformed <- transform_data$physic^2
+transform_data$passing_transformed <- transform_data$passing^2
+
+fit_rating = lm(overall ~ shooting + wage_eur_transformed + international_reputation + passing_transformed + physic_transformed, data = transform_data)
+fitted_value = fitted(fit_rating)
+residual = resid(fit_rating)
+plot(fitted_value, residual, xlim=c(50, 100), main = "Residual against fitted value")
+summary(fit_rating)
+```
+
+
+The first graph is the residual graph. Overall, the plot does not have a cluster, showing that the uncorrelation assumption between errors is satisfied. Also, the plot does not have a linear trend, which implies that the linearity assumption is fulfilled. However, there is a little bit of a shrinking trend along the fitted value, showing that the variance may not be necessarily constant, which is a problem we shall deal with.
+
+
+
+```{R}
+#| echo: false
+#| message: false
+#| warning: false
+#| information: false
+#| fig-cap: Response against fitted value test
+plot(fitted_value,data$overall, xlim=c(50,100), main = "Response against fitted value")
+```
+
+The response v.s. fitted value ($\hat{y}$ v.s. $y$) graph should show a nearly linear relation (i.e. $y=x$ line on the graph). In our case, the points are accumulating around the line, showing a clear trend, so the linear assumption is preserved.
+
+
+```{R}
+#| echo: false
+#| message: false
+#| warning: false
+#| information: false
+
+plot(fit_rating, which = 2)
+```
+
+QQ plot is used to determine whether the errors are normally distributed. The QQ plot shows that after transformations mentioned above, the errors are normal, since the points are showing approximately a straight line passing through 0.
+
+To summarize, most of the assumptions are satisfied in our settings, so linear regression is a suitable model to use in this task. In (Al-Asadi and Tasdemır, 2022), the author mentions a correlation with different predictors and ranking and its preliminary result on multi-linear regression using market value as a response. The robust result from our fitting corresponds to the relatively high accuracy of the linear regression model in the paper.
 
 \newpage
 
