@@ -13,6 +13,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(readr)
 library(tidyverse)
 library(stringr)
+library(ggplot2)
+
 ```
 
 ```{R import}
@@ -84,6 +86,14 @@ players_20 <- players_20 %>%
       TRUE ~ "other"
     )
   )
+players_20 <- players_20 %>%
+  mutate(
+    is_sub = case_when(
+      team_position %in% c('SUB', 'RES') ~ 1,
+      TRUE ~ 0
+    )
+  )
+players_20$release_clause_eur[is.na(players_20$release_clause_eur)] <- 0
 
 ```
 
@@ -96,11 +106,8 @@ players_20$number_tags <- ifelse(players_20$number_tags_proc == 0,0,players_20$n
 players_20$number_tags_proc <- NULL
 
 players_20$number_tags[is.na(players_20$number_tags)] <- 0
-
-```
-
-```{R}
 players_20$player_positions <- sub(",.*","",players_20$player_positions)
+
 ```
 
 ```{R}
@@ -110,64 +117,140 @@ players_20
 
 ###overall try fit
 ```{R}
-fit_rating = lm(overall ~ age + value_eur + wage_eur + international_reputation +pace
-  + shooting +passing + dribbling + defending + physic, data = players_20)
+
+fit_rating = lm(overall ~ age + wage_eur +international_reputation + is_sub 
+                          + Top_Club + value_eur+ height_cm + weight_kg + release_clause_eur
+                          , data = players_20)
 
 ```
 
 ```{R}
 fitted_value = fitted(fit_rating)
+
 plot(fitted_value,players_20$overall, xlim=c(50,100))
 abline(0, 1, col='blue')
-```
-
-```{R}
 residual = resid(fit_rating)
 plot(fitted_value, residual, xlim=c(50, 85))
 plot(fit_rating, which = 2)
 ```
-###try better fit for overall rating
-```{R}
-
-
-fit_rating_improved <- lm(overall ~ age + wage_eur + international_reputation + pace + 
-                          shooting + passing + dribbling + physic, data = players_20)
-summary(fit_rating_improved)
-
-# Step 3: Introduce interaction terms and polynomial terms
-fit_rating_poly <- lm(overall ~ poly(age, 2) + wage_eur * international_reputation + pace +
-                      shooting + passing + dribbling + physic, data = players_20)
-summary(fit_rating_poly)
-
-
-```
-```{R}
-fit_rating_stepwise <- step(fit_rating_poly, direction = "both")
-summary(fit_rating_stepwise)
-
-players_20$log_value_eur <- log(players_20$value_eur + 1)
-players_20$log_wage_eur <- log(players_20$wage_eur + 1)
-
-fit_rating_log <- lm(overall ~ poly(age, 2) + log_wage_eur * international_reputation + 
-                     pace + shooting + passing + dribbling + physic, data = players_20)
-summary(fit_rating_log)
-
-```
-###try to fit the best model (poly(age, 2))
-```{R}
-final_data <- players_20 |> select(overall, shooting, wage_eur, international_reputation, passing, physic)
-
-fit_rating_better = lm(overall ~ shooting + wage_eur + international_reputation +passing + physic, data = final_data)
-fitted_value = fitted(fit_rating_better)
-plot(fitted_value,players_20$overall, xlim=c(50,100))
-abline(0, 1, col='blue')
-residual = resid(fit_rating_better)
-plot(fitted_value, residual, xlim=c(50, 100))
-plot(fit_rating_better, which = 2)
-
-```
 
 ###Write as csv file in data/cleaned_data
 ```{r}
+final_data <- players_20 |> select(overall, age, wage_eur, international_reputation, is_sub 
+                          , Top_Club, value_eur, height_cm, weight_kg, release_clause_eur)
 write.csv(final_data, "../data/cleaned_data/cleaned_data.csv")
+data <- read.csv("../data/cleaned_data/cleaned_data.csv")
+transform_data <- data
+summary_stats <- data.frame(
+  min = min(data$overall),
+  max = max(data$overall),
+  mean = mean(data$overall),
+  median = median(data$overall),
+  standard_deviation = sd(data$overall)
+)
+data
+```
+
+###Some baisc assumption check
+```{R}
+plot(data[, c(2,3,4,5,6)], main="Response against predictor first 4")
+
+plot(data[, c(2,7,8,9,10,11)], main="Response against predictor other")
+```
+###box cox for each varibles
+```{R}
+library(MASS)
+
+boxcox_fit <- boxcox(fit_rating, lambda = seq(-2, 2, 0.1))  
+optimal_lambda <- boxcox_fit$x[which.max(boxcox_fit$y)]
+cat("Optimal lambda:", optimal_lambda, "\n")
+
+
+fit_age <- lm(overall ~ age, data = players_20)
+boxcox_fit <- boxcox(fit_age, lambda = seq(-2, 2, 0.1))
+optimal_lambda_age <- boxcox_fit$x[which.max(boxcox_fit$y)]
+cat("Optimal lambda for age:", optimal_lambda_age, "\n")
+
+fit_value <-  lm(overall ~ value_eur, data = players_20)
+boxcox_fit_1 <- boxcox(fit_value, lambda = seq(-2, 2, 0.1))
+optimal_lambda_value <- boxcox_fit_1$x[which.max(boxcox_fit_1$y)]
+cat("Optimal lambda for value_eur:", optimal_lambda_value, "\n")
+
+fit_release <-lm(overall ~ release_clause_eur, data = players_20)
+boxcox_fit <- boxcox(fit_release, lambda = seq(-2, 2, 0.1))
+optimal_lambda_age <- boxcox_fit$x[which.max(boxcox_fit$y)]
+cat("Optimal lambda for release_clause_eur:", optimal_lambda_age, "\n")
+
+fit_height <-lm(overall ~ height_cm, data = players_20)
+boxcox_fit <- boxcox(fit_height, lambda = seq(-2, 2, 0.1))
+optimal_lambda_age <- boxcox_fit$x[which.max(boxcox_fit$y)]
+cat("Optimal lambda for height_cm:", optimal_lambda_age, "\n")
+
+fit_weight <-lm(overall ~ weight_kg , data = players_20)
+boxcox_fit <- boxcox(fit_weight, lambda = seq(-2, 2, 0.1))
+optimal_lambda_age <- boxcox_fit$x[which.max(boxcox_fit$y)]
+cat("Optimal lambda for weight_kg:", optimal_lambda_age, "\n")
+
+fit_wage_eur <-lm(overall ~ wage_eur , data = players_20)
+boxcox_fit <- boxcox(fit_wage_eur, lambda = seq(-2, 2, 0.1))
+optimal_lambda_age <- boxcox_fit$x[which.max(boxcox_fit$y)]
+cat("Optimal lambda for wage_eur:", optimal_lambda_age, "\n")
+```
+###trying some fit on overall
+```{R}
+players_20$overall_transformed <- (players_20$overall)^5
+fit_rating_tran_over = lm(overall_transformed  ~ age + wage_eur +international_reputation + is_sub 
+                          + Top_Club + value_eur+ height_cm + weight_kg + release_clause_eur
+                          , data = players_20)
+fitted_value_1 = fitted(fit_rating_tran_over)
+plot(fitted_value_1,players_20$overall_transformed)
+abline(0, 1, col='blue')
+residual = resid(fit_rating_tran_over)
+plot(fitted_value_1, residual)
+plot(fit_rating_tran_over, which = 2)
+```
+###trying some fit on predictor
+```{R}
+players_20$age_tran <- (players_20$age^0.4646465  - 1) / 0.4646465 
+players_20$value_tran <- (players_20$value_eur)^2
+players_20$release_tran <- (players_20$release_clause_eur)^2
+players_20$wage_tran <- (players_20$wage_eur)^2
+
+fit_rating_tran = lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
+                          + Top_Club + value_tran + release_tran
+                          , data = players_20)
+fitted_value_better = fitted(fit_rating_tran)
+plot(fitted_value_better,players_20$overall, xlim=c(50,100))
+abline(0, 1, col='blue')
+residual = resid(fit_rating_tran)
+plot(fitted_value_better, residual, xlim=c(50,100))
+plot(fit_rating_tran, which = 2)
+
+```
+###interation here !!!!! not done !!!!
+```{R}
+fit_rating_final= lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
+                          + Top_Club + value_tran + release_tran
+                          , data = players_20)
+
+```
+
+###t test now !!!
+```{R}
+fit_rating_final= lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
+                          + Top_Club + value_tran + release_tran
+                          , data = players_20)
+summary(fit_rating_final)
+
+```
+
+
+###anova
+```{R}
+fit_rating_final= lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
+                          + Top_Club + value_tran + release_tran
+                          , data = players_20)
+anova_table <- anova(fit_rating_final)
+
+print(anova_table)
 ```
