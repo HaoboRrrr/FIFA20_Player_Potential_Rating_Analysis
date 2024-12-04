@@ -254,3 +254,30 @@ anova_table <- anova(fit_rating_final)
 
 print(anova_table)
 ```
+
+###CI
+```{R}
+fit_rating_final= lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
+                          + Top_Club + value_tran + release_tran
+                          , data = players_20)
+confint(fit_rating_final, level = 0.95)
+confint(fit_rating_final, level = 0.975)
+
+coef_estimates <- coef(fit_rating_final)
+std_errors <- summary(fit_rating_final)$coefficients[, "Std. Error"]
+
+t_critical <- qt(0.975, df = df.residual(fit_rating_final))
+
+lower_bound <- coef_estimates - t_critical * std_errors
+upper_bound <- coef_estimates + t_critical * std_errors
+
+confidence_intervals <- data.frame(
+  Estimate = coef_estimates,
+  Lower = lower_bound,
+  Upper = upper_bound
+)
+
+confidence_intervals
+
+
+```
