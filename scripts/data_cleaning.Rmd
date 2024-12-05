@@ -196,6 +196,8 @@ fit_wage_eur <-lm(overall ~ wage_eur , data = players_20)
 boxcox_fit <- boxcox(fit_wage_eur, lambda = seq(-2, 2, 0.1))
 optimal_lambda_age <- boxcox_fit$x[which.max(boxcox_fit$y)]
 cat("Optimal lambda for wage_eur:", optimal_lambda_age, "\n")
+
+detach("package:MASS", unload = TRUE)
 ```
 ###trying some fit on overall
 ```{R}
@@ -230,14 +232,14 @@ plot(fit_rating_tran, which = 2)
 ```
 ###final transformation
 ```{R}
-
+library(MASS)
 fit_rating_tran = lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
                           + Top_Club + value_tran + release_tran
                           , data = players_20)
 boxcox_fit <- boxcox(fit_rating_tran, lambda = seq(-1000, 1000, 0.1))  
 optimal_lambda <- boxcox_fit$x[which.max(boxcox_fit$y)]
 cat("Optimal lambda:", optimal_lambda, "\n")
-
+detach("package:MASS", unload = TRUE)
 ```
 ###final transformation result
 ```{R}
