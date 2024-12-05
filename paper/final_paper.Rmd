@@ -17,7 +17,7 @@ library(tidyverse)
 library(knitr)
 library(car)
 knitr::opts_chunk$set(fig.pos = 'H', echo = FALSE, message = FALSE, warning = FALSE)
-tinytex::install_tinytex(force=TRUE)
+
 ```
 
 # Contributions
@@ -44,16 +44,14 @@ We outline the our methods as following: First, we check the linear assumption f
 To check the linearity assumption, we use residuals against fitted values scatter plot. If the assumption is violated, the scatter plot will show curves or systematic trends, which suggest a non-linear relationship. Independence of error assumption is valid if the scatter plot of residuals against fitted values shows no grouping or clustering. The constant variance assumption is also assessed with the residuals against fitted values plot. If it is violated, the plot will show a funnel shape. If these three assumptions are valid, the residuals will randomly scattered around the horizontal axis and shows no pattern. Lastly, we use a Q-Q of residuals to check normality of errors assumption. If the assumption is valid, the points will align closely with the diagonal line. If violated, the points will deviate from the line, especially at the tails.
  
 ## Hypothesis Test & Variable Selection
-In addition to linear assumption check, T-test and F- test can be used to further check and improve our model. First of all, T-test is used to determine whether individual predictors in the model are statistically significant in explaining dependent variables . TO begin with, we choose our null hypothesis -  H_0 :  /beta = 0, H_1 :  /beta / n1q  0 and /alpha being 0.05
-, then to complete T-test, we need to examine each predictor individually, after conducting t-test on each predictor , we get p-value for each predictor and if p-value is smaller then our alpha, reject H_0 which means we keep that predict, if the predictor we are examining is 
+In addition to linear assumption check, T-test and F- test can be used to further check and improve our model. First of all, T-test is used to determine whether individual predictors in the model are statistically significant in explaining dependent variables . To begin with, we choose our null hypothesis -  $H_0:\beta=0$, $H_1:\beta\neq0$ and $\alpha$ being 0.05
+, then to complete T-test, we need to examine each predictor individually, after conducting t-test on each predictor , we get p-value for each predictor and if p-value is smaller then our alpha, reject $H_0$ which means we keep that predict, if the predictor we are examining is 
 categorical variable, then drop all terms for these categorical variables and drop this categorical variable, else drop this term and the corresponding variable if only this term contains this variable. After the T test, the F test evaluates whether the independent variables, as a group, explain a significant portion of the variation in the dependent variable.
 
 ## Interpretations and Validations
 After we get the final model, we will interpret the coefficients and perform model scoring. First, we will calculate the confidence interval and prediction interval using the test set for each coefficient and interpret it respectively. This will give us the confidence of our model. Also, using the relative magnitude of each coefficient, we can draw some conclusion on which variable affects the overall rating more significantly than others. 
 The next step is to check whether there exists multicolinearity between predictors for the final model by using VIF (variance inflation factor). If VIF for some predictor is too big, we will drop the predictor and get a new model. For other predictors, we will interpret them normally. Limitations of our model will be discussed given the multicolinearity result.  We will also check which datapoints are influential using the Cook’s distance and to check its effect on prediction. 
 The final step is to perform backward selection along with AIC (Akaike criterion) to choose our final model with the most effective predictors. $R^2$ value is calculated at last. The final model can answer our research question by telling us which predictors have the greatest effect on the overall rating, and what is the linear relationship after performing transformation on the dataset. 
-
-
 
 # Results
 
