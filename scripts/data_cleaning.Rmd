@@ -348,4 +348,38 @@ std_errors <- summary(fit_rating_final)$coefficients[, "Std. Error"]
 
 
 ```
+###VIF multicollinearity
 
+```{R}
+install.packages("car")
+library("car")
+
+
+fit_rating_final= lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
+                          + Top_Club + value_tran + release_tran + value_tran:release_tran + age_tran:value_tran
+                     + value_tran:wage_tran
+                          , data = players_20)
+
+vif(fit_rating_final)
+
+```
+### Drop wage
+```{R}
+fit_rating_final= lm(overall  ~ age_tran + international_reputation + is_sub 
+                          + Top_Club + value_tran + release_tran + value_tran:release_tran + age_tran:value_tran
+                     + value_tran:wage_tran
+                          , data = players_20)
+
+summary(fit_rating_final)
+```
+```{R}
+# Check the full model assumptions
+par ( mfrow = c (2 , 2) )
+plot ( fit_rating_final , which = c (1 , 2 , 3 , 4) )
+reduced_fit = step ( fit_rating_final , direction = "backward" , k = 2)
+summary ( reduced_fit )
+# Check the final model assumptions
+par ( mfrow = c (2 , 2) )
+plot ( reduced_fit , which = c (1 , 2 , 3 , 4) )
+
+```
