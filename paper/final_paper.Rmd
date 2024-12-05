@@ -40,12 +40,12 @@ We outline the our methods as following: First, we check the linear assumption f
 
 ## Linear Assumption Check
 
-## Variable Selection
+## Hypothesis Test & Variable Selection
 
 ## Interpretations and Validations
 
 
 
 # Results
-## 
+
 # Conclusions
