@@ -43,6 +43,9 @@ We outline the our methods as following: First, we check the linear assumption f
 ## Hypothesis Test & Variable Selection
 
 ## Interpretations and Validations
+After we get the final model, we will interpret the coefficients and perform model scoring. First, we will calculate the confidence interval and prediction interval using the test set for each coefficient and interpret it respectively. This will give us the confidence of our model. Also, using the relative magnitude of each coefficient, we can draw some conclusion on which variable affects the overall rating more significantly than others. 
+The next step is to check whether there exists multicolinearity between predictors for the final model by using VIF (variance inflation factor). If VIF for some predictor is too big, we will drop the predictor and get a new model. For other predictors, we will interpret them normally. Limitations of our model will be discussed given the multicolinearity result.  We will also check which datapoints are influential using the Cook’s distance and to check its effect on prediction. 
+The final step is to perform backward selection along with AIC (Akaike criterion) to choose our final model with the most effective predictors. $R^2$ value is calculated at last. The final model can answer our research question by telling us which predictors have the greatest effect on the overall rating, and what is the linear relationship after performing transformation on the dataset. 
 
 
 
