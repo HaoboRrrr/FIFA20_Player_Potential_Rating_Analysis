@@ -149,6 +149,7 @@ summary_stats <- data.frame(
   standard_deviation = sd(data$overall)
 )
 data
+
 ```
 
 ###Some baisc assumption check
@@ -198,7 +199,7 @@ cat("Optimal lambda for wage_eur:", optimal_lambda_age, "\n")
 ```
 ###trying some fit on overall
 ```{R}
-players_20$overall_transformed <- (players_20$overall)^5
+players_20$overall_transformed <- (players_20$overall)^2
 fit_rating_tran_over = lm(overall_transformed  ~ age + wage_eur +international_reputation + is_sub 
                           + Top_Club + value_eur+ height_cm + weight_kg + release_clause_eur
                           , data = players_20)
@@ -227,18 +228,67 @@ plot(fitted_value_better, residual, xlim=c(50,100))
 plot(fit_rating_tran, which = 2)
 
 ```
-###interation here !!!!! not done !!!!
+###final transformation
 ```{R}
-fit_rating_final= lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
+
+fit_rating_tran = lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
                           + Top_Club + value_tran + release_tran
                           , data = players_20)
+boxcox_fit <- boxcox(fit_rating_tran, lambda = seq(-1000, 1000, 0.1))  
+optimal_lambda <- boxcox_fit$x[which.max(boxcox_fit$y)]
+cat("Optimal lambda:", optimal_lambda, "\n")
 
+```
+###final transformation result
+```{R}
+players_20$overall_transformed <- (players_20$overall)^2.4
+
+fit_rating_tran = lm(overall_transformed  ~ age_tran + wage_tran +international_reputation + is_sub 
+                          + Top_Club + value_tran + release_tran
+                          , data = players_20)
+fitted_value_better = fitted(fit_rating_tran)
+plot(fitted_value_better,players_20$overall_transformed)
+abline(0, 1, col='blue')
+residual = resid(fit_rating_tran)
+plot(fitted_value_better, residual)
+plot(fit_rating_tran, which = 2)
+
+```
+###data after tranformation
+```{R}
+transformated_data <- players_20 |> select(overall_transformed, age_tran,wage_tran,international_reputation, is_sub , Top_Club , value_tran ,release_tran)
+
+write.csv(transformated_data, "../data/cleaned_data/transformated_data.csv")
+data <- read.csv("../data/cleaned_data/transformated_data.csv")
+
+summary(data)
+```
+
+
+###interation here !!!!! not done !!!!
+```{R}
+plot(data[, c(2,3,4,5,6,7,8,9)], main="Response against predictor first 4")
+
+
+fit_rating_final= lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
+                          + Top_Club + value_tran + release_tran + value_tran:release_tran + age_tran:value_tran
+                     + value_tran:wage_tran
+                          , data = players_20)
+
+fitted_value_better = fitted(fit_rating_final)
+plot(fitted_value_better,players_20$overall_transformed)
+abline(0, 1, col='blue')
+residual = resid(fit_rating_final)
+plot(fitted_value_better, residual)
+plot(fit_rating_final, which = 2)
+ 
 ```
 
 ###t test now !!!
 ```{R}
-fit_rating_final= lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
-                          + Top_Club + value_tran + release_tran
+ fit_rating_final= lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
+                          + Top_Club + value_tran + release_tran + value_tran:release_tran + age_tran:value_tran
+                     + value_tran:wage_tran
                           , data = players_20)
 summary(fit_rating_final)
 
@@ -247,8 +297,9 @@ summary(fit_rating_final)
 
 ###anova
 ```{R}
-fit_rating_final= lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
-                          + Top_Club + value_tran + release_tran
+ fit_rating_final= lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
+                          + Top_Club + value_tran + release_tran + value_tran:release_tran + age_tran:value_tran
+                     + value_tran:wage_tran
                           , data = players_20)
 anova_table <- anova(fit_rating_final)
 
@@ -257,8 +308,9 @@ print(anova_table)
 
 ###CI
 ```{R}
-fit_rating_final= lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
-                          + Top_Club + value_tran + release_tran
+ fit_rating_final= lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
+                          + Top_Club + value_tran + release_tran + value_tran:release_tran + age_tran:value_tran
+                     + value_tran:wage_tran
                           , data = players_20)
 confint(fit_rating_final, level = 0.95)
 confint(fit_rating_final, level = 0.975)
@@ -281,3 +333,17 @@ confidence_intervals
 
 
 ```
+###PI
+```{R}
+fit_rating_final= lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
+                          + Top_Club + value_tran + release_tran
+                          , data = players_20)
+predict(fit_rating_final, level = 0.95)
+predict(fit_rating_final, level = 0.975)
+
+coef_estimates <- coef(fit_rating_final)
+std_errors <- summary(fit_rating_final)$coefficients[, "Std. Error"]
+
+
+```
+
