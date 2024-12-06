@@ -132,6 +132,21 @@ abline(0, 1, col='blue')
 residual = resid(fit_rating)
 plot(fitted_value, residual, xlim=c(50, 85))
 plot(fit_rating, which = 2)
+summary(fit_rating)
+
+# Extract coefficients
+coefficients <- coef(fit_rating)
+coefficients
+# Create the regression equation as a string
+regression_equation <- paste0(
+  "overall = ", 
+  round(coefficients[1], 3), " + ",  # Intercept
+  paste0(round(coefficients[-1], 3), " * ", names(coefficients[-1]), collapse = " + ")
+)
+
+# Display the equation
+cat("Linear Model Equation:\n", regression_equation, "\n")
+
 ```
 
 ###Write as csv file in data/cleaned_data
@@ -168,17 +183,17 @@ cat("Optimal lambda:", optimal_lambda, "\n")
 
 
 fit_age <- lm(overall ~ age, data = players_20)
-boxcox_fit <- boxcox(fit_age, lambda = seq(-2, 2, 0.1))
+boxcox_fit <- boxcox(fit_age, lambda = seq(-2, 10, 0.1))
 optimal_lambda_age <- boxcox_fit$x[which.max(boxcox_fit$y)]
 cat("Optimal lambda for age:", optimal_lambda_age, "\n")
 
 fit_value <-  lm(overall ~ value_eur, data = players_20)
-boxcox_fit_1 <- boxcox(fit_value, lambda = seq(-2, 2, 0.1))
+boxcox_fit_1 <- boxcox(fit_value, lambda = seq(-2, 10, 0.1))
 optimal_lambda_value <- boxcox_fit_1$x[which.max(boxcox_fit_1$y)]
 cat("Optimal lambda for value_eur:", optimal_lambda_value, "\n")
 
 fit_release <-lm(overall ~ release_clause_eur, data = players_20)
-boxcox_fit <- boxcox(fit_release, lambda = seq(-2, 2, 0.1))
+boxcox_fit <- boxcox(fit_release, lambda = seq(-2, 10, 0.1))
 optimal_lambda_age <- boxcox_fit$x[which.max(boxcox_fit$y)]
 cat("Optimal lambda for release_clause_eur:", optimal_lambda_age, "\n")
 
@@ -193,7 +208,7 @@ optimal_lambda_age <- boxcox_fit$x[which.max(boxcox_fit$y)]
 cat("Optimal lambda for weight_kg:", optimal_lambda_age, "\n")
 
 fit_wage_eur <-lm(overall ~ wage_eur , data = players_20)
-boxcox_fit <- boxcox(fit_wage_eur, lambda = seq(-2, 2, 0.1))
+boxcox_fit <- boxcox(fit_wage_eur, lambda = seq(-2, 10, 0.1))
 optimal_lambda_age <- boxcox_fit$x[which.max(boxcox_fit$y)]
 cat("Optimal lambda for wage_eur:", optimal_lambda_age, "\n")
 
@@ -215,9 +230,9 @@ plot(fit_rating_tran_over, which = 2)
 ###trying some fit on predictor
 ```{R}
 players_20$age_tran <- (players_20$age^0.4646465  - 1) / 0.4646465 
-players_20$value_tran <- (players_20$value_eur)^2
-players_20$release_tran <- (players_20$release_clause_eur)^2
-players_20$wage_tran <- (players_20$wage_eur)^2
+players_20$value_tran <- (players_20$value_eur)^8
+players_20$release_tran <- (players_20$release_clause_eur)^5.1
+players_20$wage_tran <- (players_20$wage_eur)^3.7
 
 fit_rating_tran = lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
                           + Top_Club + value_tran + release_tran
@@ -243,7 +258,7 @@ detach("package:MASS", unload = TRUE)
 ```
 ###final transformation result
 ```{R}
-players_20$overall_transformed <- (players_20$overall)^2.4
+players_20$overall_transformed <- (players_20$overall)^2
 
 fit_rating_tran = lm(overall_transformed  ~ age_tran + wage_tran +international_reputation + is_sub 
                           + Top_Club + value_tran + release_tran
@@ -393,8 +408,7 @@ print(players_20[1452, ])
 print(influential_points)
 cleaned_data <- players_20[-influential_points, ]
 fit_after_cooks= lm(overall  ~ age_tran + international_reputation + is_sub 
-                          + Top_Club + value_tran + wage_tran + age_tran:value_tran
-                     + value_tran:wage_tran
+                          + Top_Club  
                           , data = cleaned_data)
 
 par ( mfrow = c (2 , 2) )
@@ -404,5 +418,23 @@ summary(fit_after_cooks)
 
 ```{R}
 summary(fit_after_cooks)
+
+```
+
+```{R}
+# Extract coefficients
+coefficients <- coef(fit_after_cooks)
+coefficients
+# Create the regression equation as a string
+regression_equation <- paste0(
+  "overall = ", 
+  round(coefficients[1], 3), " + ",  # Intercept
+  paste0(round(coefficients[-1], 3), " * ", names(coefficients[-1]), collapse = " + ")
+)
+
+# Display the equation
+cat("Linear Model Equation:\n", regression_equation, "\n")
+
+
 
 ```
