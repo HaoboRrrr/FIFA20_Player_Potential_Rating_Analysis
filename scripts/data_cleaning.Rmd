@@ -303,7 +303,7 @@ plot(fit_rating_final, which = 2)
 
 ###t test now !!!
 ```{R}
- fit_rating_final= lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
+ fit_rating_final= lm(overall_transformed  ~ age_tran + wage_tran +international_reputation + is_sub 
                           + Top_Club + value_tran + release_tran + value_tran:release_tran + age_tran:value_tran
                      + value_tran:wage_tran
                           , data = players_20)
@@ -314,7 +314,7 @@ summary(fit_rating_final)
 
 ###anova
 ```{R}
- fit_rating_final= lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
+ fit_rating_final= lm(overall_transformed  ~ age_tran + wage_tran +international_reputation + is_sub 
                           + Top_Club + value_tran + release_tran + value_tran:release_tran + age_tran:value_tran
                      + value_tran:wage_tran
                           , data = players_20)
@@ -325,7 +325,7 @@ print(anova_table)
 
 ###CI
 ```{R}
- fit_rating_final= lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
+ fit_rating_final= lm(overall_transformed  ~ age_tran + wage_tran +international_reputation + is_sub 
                           + Top_Club + value_tran + release_tran + value_tran:release_tran + age_tran:value_tran
                      + value_tran:wage_tran
                           , data = players_20)
@@ -352,7 +352,7 @@ confidence_intervals
 ```
 ###PI
 ```{R}
-fit_rating_final= lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
+fit_rating_final= lm(overall_transformed  ~ age_tran + wage_tran +international_reputation + is_sub 
                           + Top_Club + value_tran + release_tran
                           , data = players_20)
 predict(fit_rating_final, level = 0.95)
@@ -366,11 +366,10 @@ std_errors <- summary(fit_rating_final)$coefficients[, "Std. Error"]
 ###VIF multicollinearity
 
 ```{R}
-install.packages("car")
 library("car")
 
 
-fit_rating_final= lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
+fit_rating_final= lm(overall_transformed  ~ age_tran + wage_tran +international_reputation + is_sub 
                           + Top_Club + value_tran + release_tran + value_tran:release_tran + age_tran:value_tran
                      + value_tran:wage_tran
                           , data = players_20)
@@ -380,7 +379,7 @@ vif(fit_rating_final)
 ```
 ### Drop release
 ```{R}
-fit_rating_final= lm(overall  ~ age_tran + international_reputation + is_sub 
+fit_rating_final= lm(overall_transformed  ~ age_tran + international_reputation + is_sub 
                           + Top_Club + value_tran + wage_tran + age_tran:value_tran
                      + value_tran:wage_tran
                           , data = players_20)
@@ -407,7 +406,7 @@ influential_points <- which(cooks_dist > 4 / length(cooks_dist))
 print(players_20[1452, ])
 print(influential_points)
 cleaned_data <- players_20[-influential_points, ]
-fit_after_cooks= lm(overall  ~ age_tran + international_reputation + is_sub 
+fit_after_cooks= lm(overall_transformed  ~ age_tran + international_reputation + is_sub 
                           + Top_Club  
                           , data = cleaned_data)
 
