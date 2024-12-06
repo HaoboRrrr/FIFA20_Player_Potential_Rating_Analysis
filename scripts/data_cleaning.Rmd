@@ -363,10 +363,10 @@ fit_rating_final= lm(overall  ~ age_tran + wage_tran +international_reputation +
 vif(fit_rating_final)
 
 ```
-### Drop wage
+### Drop release
 ```{R}
 fit_rating_final= lm(overall  ~ age_tran + international_reputation + is_sub 
-                          + Top_Club + value_tran + release_tran + value_tran:release_tran + age_tran:value_tran
+                          + Top_Club + value_tran + wage_tran + age_tran:value_tran
                      + value_tran:wage_tran
                           , data = players_20)
 
@@ -381,5 +381,28 @@ summary ( reduced_fit )
 # Check the final model assumptions
 par ( mfrow = c (2 , 2) )
 plot ( reduced_fit , which = c (1 , 2 , 3 , 4) )
+
+```
+```{R}
+cooks_dist <- cooks.distance(reduced_fit)
+plot(cooks_dist, type = "h", main = "Cook's Distance", ylab = "Cook's Distance")
+abline(h = 4 / length(cooks_dist), col = "red", lty = 2)
+
+influential_points <- which(cooks_dist > 4 / length(cooks_dist))
+print(players_20[1452, ])
+print(influential_points)
+cleaned_data <- players_20[-influential_points, ]
+fit_after_cooks= lm(overall  ~ age_tran + international_reputation + is_sub 
+                          + Top_Club + value_tran + wage_tran + age_tran:value_tran
+                     + value_tran:wage_tran
+                          , data = cleaned_data)
+
+par ( mfrow = c (2 , 2) )
+plot ( fit_after_cooks , which = c (1 , 2 , 3 , 4) )
+summary(fit_after_cooks)
+```
+
+```{R}
+summary(fit_after_cooks)
 
 ```
