@@ -14,7 +14,7 @@ library(readr)
 library(tidyverse)
 library(stringr)
 library(ggplot2)
-
+library(knitr)
 ```
 
 ```{R import}
@@ -255,6 +255,8 @@ boxcox_fit <- boxcox(fit_rating_tran, lambda = seq(-1000, 1000, 0.1))
 optimal_lambda <- boxcox_fit$x[which.max(boxcox_fit$y)]
 cat("Optimal lambda:", optimal_lambda, "\n")
 detach("package:MASS", unload = TRUE)
+
+
 ```
 ###final transformation result
 ```{R}
@@ -269,6 +271,19 @@ abline(0, 1, col='blue')
 residual = resid(fit_rating_tran)
 plot(fitted_value_better, residual)
 plot(fit_rating_tran, which = 2)
+
+# Extract coefficients
+coefficients <- coef(fit_rating_tran)
+coefficients
+# Create the regression equation as a string
+regression_equation <- paste0(
+  "overall = ", 
+  round(coefficients[1], 3), " + ",  # Intercept
+  paste0(round(coefficients[-1], 3), " * ", names(coefficients[-1]), collapse = " + ")
+)
+
+# Display the equation
+cat("Linear Model Equation:\n", regression_equation, "\n")
 
 ```
 ###data after tranformation
@@ -298,6 +313,19 @@ abline(0, 1, col='blue')
 residual = resid(fit_rating_final)
 plot(fitted_value_better, residual)
 plot(fit_rating_final, which = 2)
+
+# Extract coefficients
+coefficients <- coef(fit_rating_final)
+coefficients
+# Create the regression equation as a string
+regression_equation <- paste0(
+  "overall = ", 
+  round(coefficients[1], 3), " + ",  # Intercept
+  paste0(round(coefficients[-1], 3), " * ", names(coefficients[-1]), collapse = " + ")
+)
+
+# Display the equation
+cat("Linear Model Equation:\n", regression_equation, "\n")
  
 ```
 
@@ -375,6 +403,8 @@ fit_rating_final= lm(overall_transformed  ~ age_tran + wage_tran +international_
 
 vif(fit_rating_final)
 
+
+
 ```
 ### Drop release
 ```{R}
@@ -383,8 +413,22 @@ fit_rating_final= lm(overall_transformed  ~ age_tran + international_reputation 
                           , data = players_20)
 
 summary(fit_rating_final)
+
+# Extract coefficients
+coefficients <- coef(fit_rating_final)
+coefficients
+# Create the regression equation as a string
+regression_equation <- paste0(
+  "overall = ", 
+  round(coefficients[1], 3), " + ",  # Intercept
+  paste0(round(coefficients[-1], 3), " * ", names(coefficients[-1]), collapse = " + ")
+)
+
+# Display the equation
+cat("Linear Model Equation:\n", regression_equation, "\n")
 ```
 ```{R}
+# AIC backward selection
 # Check the full model assumptions
 par ( mfrow = c (2 , 2) )
 plot ( fit_rating_final , which = c (1 , 2 , 3 , 4) )
@@ -394,6 +438,19 @@ summary ( reduced_fit )
 par ( mfrow = c (2 , 2) )
 plot ( reduced_fit , which = c (1 , 2 , 3 , 4) )
 
+
+# Extract coefficients
+coefficients <- coef(fit_rating_final)
+coefficients
+# Create the regression equation as a string
+regression_equation <- paste0(
+  "overall = ", 
+  round(coefficients[1], 3), " + ",  # Intercept
+  paste0(round(coefficients[-1], 3), " * ", names(coefficients[-1]), collapse = " + ")
+)
+
+# Display the equation
+cat("Linear Model Equation:\n", regression_equation, "\n")
 ```
 ```{R}
 cooks_dist <- cooks.distance(reduced_fit)
@@ -451,5 +508,115 @@ regression_equation <- paste0(
 cat("Linear Model Equation:\n", regression_equation, "\n")
 
 
+```
 
+### preliminery assumption check
+```{r, fig.height=4, fig.width=16}
+par(mfrow=c(1,3))
+plot(fitted_value,players_20$overall, xlim=c(50,100))
+abline(0, 1, col='blue')
+residual = resid(fit_rating)
+plot(fitted_value, residual, xlim=c(50, 85))
+plot(fit_rating, which = 2)
+```
+### 4 Models
+```{r, fig.height=16, fig.width=26}
+par(mfrow=c(5,3))
+
+fitted_value = fitted(fit_rating)
+plot(fitted_value,players_20$overall, xlim=c(50,100))
+abline(0, 1, col='blue')
+residual = resid(fit_rating)
+plot(fitted_value, residual, xlim=c(50, 85))
+plot(fit_rating, which = 2)
+
+
+players_20$overall_transformed <- (players_20$overall)^2
+fit_rating_tran_over = lm(overall_transformed  ~ age + wage_eur +international_reputation + is_sub 
+                          + Top_Club + value_eur+ height_cm + weight_kg + release_clause_eur
+                          , data = players_20)
+fitted_value_1 = fitted(fit_rating_tran_over)
+plot(fitted_value_1,players_20$overall_transformed)
+abline(0, 1, col='blue')
+model_2_1 <- recordPlot()
+residual = resid(fit_rating_tran_over)
+plot(fitted_value_1, residual)
+model_2_2 <- recordPlot()
+plot(fit_rating_tran_over, which = 2)
+model_2_3 <- recordPlot()
+
+
+players_20$age_tran <- (players_20$age^0.4646465  - 1) / 0.4646465 
+players_20$value_tran <- (players_20$value_eur)^2
+players_20$release_tran <- (players_20$release_clause_eur)^2
+players_20$wage_tran <- (players_20$wage_eur)^2
+
+fit_rating_tran = lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
+                          + Top_Club + value_tran + release_tran
+                          , data = players_20)
+fitted_value_better = fitted(fit_rating_tran)
+plot(fitted_value_better,players_20$overall, xlim=c(50,100))
+abline(0, 1, col='blue')
+model_3_1 <- recordPlot()
+residual = resid(fit_rating_tran)
+plot(fitted_value_better, residual, xlim=c(50,100))
+model_3_2 <- recordPlot()
+plot(fit_rating_tran, which = 2)
+model_3_3 <- recordPlot()
+
+
+players_20$overall_transformed <- (players_20$overall)^2.4
+fit_rating_tran = lm(overall_transformed  ~ age_tran + wage_tran +international_reputation + is_sub 
+                          + Top_Club + value_tran + release_tran
+                          , data = players_20)
+fitted_value_better = fitted(fit_rating_tran)
+plot(fitted_value_better,players_20$overall_transformed)
+abline(0, 1, col='blue')
+model_4_1 <- recordPlot()
+residual = resid(fit_rating_tran)
+plot(fitted_value_better, residual)
+model_4_2 <- recordPlot()
+plot(fit_rating_tran, which = 2)
+model_4_3 <- recordPlot()
+
+
+fit_rating_final= lm(overall  ~ age_tran + wage_tran +international_reputation + is_sub 
+                          + Top_Club + value_tran + release_tran + value_tran:release_tran + age_tran:value_tran
+                     + value_tran:wage_tran
+                          , data = players_20)
+
+fitted_value_better = fitted(fit_rating_final)
+plot(fitted_value_better,players_20$overall_transformed)
+abline(0, 1, col='blue')
+model_5_1 <- recordPlot()
+residual = resid(fit_rating_final)
+plot(fitted_value_better, residual)
+model_5_2 <- recordPlot()
+plot(fit_rating_final, which = 2)
+model_5_3 <- recordPlot()
+```
+```
+
+```
+### Anova table
+```{r}
+kable(anova_table)
+```
+
+### Final Model
+```{r, fig.height=4, fig.width=16}
+par(mfrow=c(1,3))
+fit_rating_final= lm(overall_transformed  ~ age_tran + wage_tran +international_reputation + is_sub 
+                          + Top_Club
+                          , data = players_20)
+
+fitted_value_better = fitted(fit_rating_final)
+plot(fitted_value_better,players_20$overall_transformed)
+abline(0, 1, col='blue')
+model_5_1 <- recordPlot()
+residual = resid(fit_rating_final)
+plot(fitted_value_better, residual)
+model_5_2 <- recordPlot()
+plot(fit_rating_final, which = 2)
+model_5_3 <- recordPlot()
 ```

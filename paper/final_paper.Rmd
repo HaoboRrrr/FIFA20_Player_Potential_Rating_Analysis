@@ -2,12 +2,14 @@
 title: What factors influence the overall rating of soccer players in the FIFA video game
 author: "Yizhuo Liu, Leo Cheng, Haobo Ren"
 date: "October-02-2024"
-output: pdf_document
+output:
+  pdf_document:
+    citation_package: biblatex
 subtitle: 
 date-format: long
 abstract: 
 format: pdf
-number-sections: true
+number-sections: yes
 bibliography: references.bib
 thanks: 'Code and data are available at: https://github.com/HaoboRrrr/FIFA20_Player_Potential_Rating_Analysis/tree/main'
 ---
@@ -122,13 +124,13 @@ players_20$player_positions <- sub(",.*","",players_20$player_positions)
 
 # Contributions
 
-Yizhuo Liu: Data cleaning, introduction \newline
-Leo Cheng: Preliminary result \newline
-Haobo Ren: Data description \newline
+Yizhuo Liu: Data cleaning, Introduction, Poster \newline
+Leo Cheng: Methods, Results \newline
+Haobo Ren: Conclusions & Limitations \newline
 
 # Introduction
 
-In the long history of soccer, there have been many ways of evaluating the performance of soccer players. Whether by the number of goals they score or the number of trophies they earn, but these are very unilateral methods that only favor a certain kind of player, not everyone, especially when it comes to unknown players. Certainly, the video game franchise FIFA comes to mind. Every year FIFA evaluates professional soccer player's previous year's performance and gives them a rating from 0 to 100.  From 1993 to now, there has been a new FIFA game every single year, yet no one knows what factors influence the rating from FIFA that the majority of the people agree on. Therefore, the main objective of this report and the research question is going to be "What factors influence the overall rating of soccer players in the FIFA video game". If we can accomplish this objective, then we can use it to quantify players' performance and predict further performance and other stuff related to performance. With our research question in mind, we proposed a hypothesis: factors wage, international reputation, age, whether substitution, club, value in EUR, height, weight and release clause in EUR will affect the response variable - FIFA overall rating. These variables are chosen to be our predictors in the preliminary model. To back up our hypothesis, the article "Predict the Value of Football Players Using FIFA Video Game Data and Machine Learning Techniques" (Al-Asadi and Tasdemır, 2022), which is on using FIFA to get a data-driven approach to player valuation, also uses very similar predictors that we have chosen, and the base model they end up using is also linear regression. In addition, in "PlayeRank: Data-driven Performance Evaluation and Player Ranking in Soccer via a Machine Learning Approach" (Pappalardo et al., 2019) they use real-world data to quantify players' performance with a reasonable success. Last but not least, the article "Predicting the Future Performance of Soccer Players" (Arndt and Brefeld, 2016), uses a combination of linear regression and multitask regression, to evaluate current player performance and predict the outcome of a soccer game. Two out of the three articles have chosen linear regression, therefore it shows that linear regression is commonly used in this area. Also, by looking at the scatter plot for our response variables and predictions, there is a linear relationship.  By using linear regression method we are looking to get an accurate prediction of FIFA rating.
+In the long history of soccer, there have been many ways of evaluating the performance of soccer players such the number of goals, but these methods only favor a certain kind of player. Knowing this, the video game franchise FIFA comes to mind, which rates players annually on a 0-100 scale based on the previous performance.  However, no one knows what factors influence the rating from FIFA. Therefore, the main objective of this report and the research question is going to be "What factors influence the overall rating of soccer players in tshe FIFA video game". By accomplishing this, we can use it to make real-world predictions. We proposed a hypothesis: the factors "wage", "international reputation", "age", "whether substitution", "club", "value in EUR", "height", "weight" and "release clause in EUR" will affect the response variable - FIFA overall rating. These variables are chosen to be our predictors in the preliminary model. To back up our hypothesis, the research on predicting value of foorball player (Al-Asadi and Tasdemır, 2022) utilizes FIFA for a data-driven approach to player evaluation, which uses very similar predictors and a linear regression base model. In addition, in Pappalardo et al., 2019, they use real-world data to quantify players' performance with a reasonable success. Last but not least, the article Arndt and Brefeld, 2016, uses a combination of linear regression and multitask regression to evaluate current player performance and predict the outcome of a soccer game. The appearance of linear regression model in literature combined with our scatter plot for our response variables and predictions (c.f. Appendix, Figure 4) suggest using a linear regression model to accurately predict the overall rating. 
 
 # Methods
 
@@ -137,8 +139,11 @@ We outline our methods as follows: First, we check the linear assumption for eac
 ## Linear Assumption Check
 
 We use residuals against fitted values scatter plot to check linearity, independence of error, and constant variance assumptions. 
+
 - Curves or trends suggest non-linearity; Box-Cox transformation is applied.
+
 - Residual clustering indicates dependence issues; we add interaction terms.
+
 - Funnel-shaped residuals suggest heteroscedasticity; we use Box-Cox transformation.
 
 After the check, the residuals will randomly scatter around 0 and show no pattern. Lastly, on the Q-Q plot, residual points deviating from the diagonal line suggest violation of the normal error assumption. If this is the case, we apply power transformation on the response variable.
@@ -157,7 +162,7 @@ The final step is to perform backward selection along with AIC (Akaike criterion
 Our model is fitted following the methods described above, and we will discuss our results in each of the subsections. Throughout, we will denote our model at different stages with $M_i$. 
 
 ## Linear Assumptions 
-The preliminary model we fit on the initial predictors introduced in the introduction is denoted as $M_0$ and is shown in the table. The following chart shows the comparison of the original series of graphs of assumption checks and transformed graphs. First of all, we drop weight and height since those two variables does not exhibit any linearity with other variables (c.f. appendix). 
+The preliminary model we fit on the initial predictors introduced in the introduction is denoted as $M_0$ and is shown in Table 2. The following chart shows the comparison of the original series of graphs of assumption checks and transformed graphs. First of all, we drop weight and height since those two variables does not exhibit any linearity with other variables (c.f. appendix, Figure. ). 
 
 The results of the assumption checks before and after applying the Box-Cox transformations demonstrate significant improvements in meeting the linear regression assumptions. Prior to transformation, the residuals versus fitted values plot showed clear patterns, indicating non-linearity and heteroscedasticity. Besides, the Q-Q plot revealed deviations from the diagonal line, particularly at the tails, suggesting non-normal residuals. Using the exact Box-Cox lambda values for the response variable ($\lambda= 2.4$) and predictors (e.g., $\lambda = 0.4646$ for age, $\lambda = 2$ for value and wage), $overall$, $age$, $wage$, $value$ and $release$ are transformed to $overall^{2.4}$, $(age^0.465-1)/0.465$, $wage^{3.7}$, $value^{5.1}$ and $release^8$ respectively. 
 After the transformations, the residuals versus fitted values plot almost exhibits a random scatter around the horizontal axis, resolving the earlier patterns and indicating that both linearity and homoscedasticity have been addressed. Similarly, the Q-Q plot shows the residuals closely following the diagonal line, reflecting a significant improvement in the normality of residuals. These results confirm that the exact power transformations have successfully aligned the data with the assumptions of linear regression, enhancing the model's reliability. The transformed model $M_1$ is shown in the table. 
@@ -182,7 +187,7 @@ plot(fit_rating, which = 2)
 
 ## Variable Selections
 ### t-Test and F-test
-We performed t-Test and F-test on our predictors. According to table AA11, all of the predictors have a very small p-value except for predictor value_eur, therefore rejecting the null hypothesis for all predictors but value_eur. So we are keeping all the existing predictors minus value_eur and its interaction term. This means the majority of our predictors are statistically significant in explaining the overall rating. This gives us a new model $M_2$ After fixing our predictors, we have done a F-test to determine the overall significance of the regression model. All of our predictors left have a high F value and as a group, which shows that our model successfully rejects the null hypothesis. This confirms that the model as a whole explains a significant portion of the variability in the data. So all of our predictors except value_eur are factors that may potentially influence overall rating in FIFA2020 according to t-test and F-test. 
+We performed t-Test and F-test on our predictors. According to Table 1, all of the predictors have a very small p-value except for predictor value_eur, therefore rejecting the null hypothesis for all predictors but value_eur. So we are keeping all the existing predictors minus value_eur and its interaction term. This means the majority of our predictors are statistically significant in explaining the overall rating. This gives us a new model $M_2$ After fixing our predictors, we have done a F-test to determine the overall significance of the regression model. All of our predictors left have a high F value and as a group, which shows that our model successfully rejects the null hypothesis. This confirms that the model as a whole explains a significant portion of the variability in the data. So all of our predictors except value_eur are factors that may potentially influence overall rating in FIFA2020 according to t-test and F-test. 
 
 ```{r}
 # Transformation
@@ -234,9 +239,8 @@ fit_after_cooks= lm(overall_transformed  ~ age_tran + international_reputation +
 ```
 
 ### Model Scoring and Assumption Check
-We calculate the RSS, $R^2$ value and adjusted $R^2$ value to be used as the criterions to assess the model's goodness. The results are shown below in the table.  We also plot the final response v.s. fitted value plot and other residual plots. The final plot basically meets all our expectations on linear assumption as stated above, with a minor violation for the residual v.s. fitted plot, which will be discussed in the Conclusions section. After this, we get our final model $M_5$. 
+The model has residual standard error=624.6, $R^2=0.472$ value and adjusted $R^2=0.471$. These are our  criterions for assessing the model. We also plot the final response v.s. fitted value plot and other residual plots in Figure. 3. The final plot basically meets all our expectations on linear assumption as stated above, with a minor violation for the residual v.s. fitted plot, which will be discussed in the Conclusions section. After this, we get our final model $M_5$. 
 
-### Final Model
 ```{r, fig.height=4, fig.width=16, fig.cap="\\label{fig:figs} The reponse v.s. fitted (left), residual v.s. fitted (middle) and Q-Q plot (right) of our final model $M_1$. We can see that compare to Fig. 1, all plots are improved in the sense of assumption checking discussed in the paragraph. "}
 par(mfrow=c(1,3))
 
@@ -269,26 +273,40 @@ data <- data.frame(
   )
 )
 
-kable(data, caption = "A summary of all regression models we developed from $M_0$ to $M_4$. Except for $M_0$, all $overall$ refers to $overall^2.4$. $age$_$trans=age^2$, $value$_$tran=value_eur^8$, $release$_$tran=release$_$clause$_$eur^{5.1}$, $wage$_$tran=wage$_$eur^{3.7}$. ")
+kable(data, caption = "A summary of all regression models we developed from $M_0$ to $M_4$. Except for $M_0$, all $overall$ refers to overall$^{2.4}$. age_trans=age$^2$, value_tran=value_eur$^8$, release_tran=release_clause_eur$^{5.1}$, wage_tran=wage_eur$^{3.7}$. ")
 ```
 
 # Conclusions
 After all the process of assumption checks, variable selections and validations, we arrive at our final model. The term with the highest coefficient is the categorical variable Top Club with level top 20. Among the others, the most important variables are age and international reputation. This gives us a direct answer to the research question: the factors that influence the overall rating the most are the clubs the players are in, the age of the player and the international reputation. 
 
-Take the most impactful variable Top Club as an example, we can interpret it as: if a player has all other predictors fixed and its club changes from the quantile above 30 to the top 20 club, then its average overall rating^2.4 will increase by 998 (i.e. the average overall rating increases by 17.77. Also, we have a 95% confidence to conclude that the true coefficient is between 816 and 1181 since if we were to repeatedly randomly sample from the population and compute a 95% confidence interval, then 95% of the intervals would include the true coefficient. This shows that the club a player is in is very important in predicting the overall rating, namely a higher ranking club will result in a much higher rating than the others. 
+Take the most impactful variable Top Club as an example, we can interpret it as: if a player has all other predictors fixed and its club changes from the quantile above 30 to the top 20 club, then its average overall rating^2.4 will increase by 998 (i.e. the average overall rating increases by 17.77). Also, we have a 95% confidence to conclude that the true coefficient is between 816 and 1181 since if we were to repeatedly randomly sample from the population and compute a 95% confidence interval, then 95% of the intervals would include the true coefficient. This shows that the club a player is in is very important in predicting the overall rating, namely a higher ranking club will result in a much higher rating than the others. 
 
 Another surprising observation is that age is a very important factor in predicting a player’s overall rating in our model compared to literature, (Al-Asadi and Tasdemır, 2022). 
 
-The overall model meets our expectation on accuracy (reaching a $R^2$ of 0.) and on linear assumptions. However, due to the complexity of the dataset, there are still limitations for this model. First of all, there are still assumption violations. The residual v.s. fitted model shows a slightly converging trend, which may imply a violation of homoscedasticity. In addition, extreme observations are common due to the nature of soccer players, shown in figure ?. The model is still sensitive to extreme values. The third problem is on the dataset itself. Our ultimate goal is to quantify and predict a player’s performance. Since the dataset is collected from a video game, there may be bias and may not reflect the real-world scenario. This may be fixed by combining some real-world data with the synthetic one. 
+The overall model meets our expectation on accuracy (reaching a $R^2$ of 0.472) and on linear assumptions. However, due to the complexity of the dataset, there are still limitations for this model. First of all, there are still assumption violations. The residual v.s. fitted model shows a slightly converging trend, which may imply a violation of homoscedasticity. In addition, extreme observations are common due to the nature of soccer players, shown in Figure 2. The model is still sensitive to extreme values. The third problem is on the dataset itself. Our ultimate goal is to quantify and predict a player’s performance. Since the dataset is collected from a video game, there may be bias and may not reflect the real-world scenario. This may be fixed by combining some real-world data with the synthetic one. 
 
+\begin{thebibliography}{99}
+
+\bibitem{al2022predict}
+Al-Asadi, M. A., \& Tasdemir, S. (2022). Predict the value of football players using FIFA video game data and machine learning techniques. \textit{IEEE Access}, 10, 22631--22645. IEEE. https://doi.org/10.1109/ACCESS.2022.3166783
+
+\bibitem{pappalardo2019playerank}
+Pappalardo, L., Cintia, P., Ferragina, P., Massucco, E., Pedreschi, D., \& Giannotti, F. (2019). PlayeRank: Data-driven performance evaluation and player ranking in soccer via a machine learning approach. \textit{ACM Transactions on Intelligent Systems and Technology (TIST)}, 10(5), 1--27. ACM New York, NY, USA. https://doi.org/10.1145/3129329
+
+\bibitem{arndt2016predicting}
+Arndt, C., \& Brefeld, U. (2016). Predicting the future performance of soccer players. \textit{Statistical Analysis and Data Mining: The ASA Data Science Journal}, 9(5), 373--382. Wiley Online Library. https://doi.org/10.1002/sam.11328
+
+\end{thebibliography}
 
 # Appendix
-We will include several plots in the appendix.
+We will include one figure in this section. 
 
-```{r, fig.height=8, fig.width=16, fig.cap="\\label{fig:figs} The response v.s. predictor and predictor v.s. predictor diagram. We can infer linearity from inspecting the relationship between different predictors and response. "}
+```{r, fig.height=10, fig.width=16, fig.cap="\\label{fig:figs} The response v.s. predictor and predictor v.s. predictor diagram. We can infer linearity from inspecting the relationship between different predictors and response. "}
 data <- read.csv("../data/cleaned_data/cleaned_data.csv")
-par ( mfrow = c (2, 1) )
-plot(data[, c(2,3,4,5,6)], main="Response against predictors")
+par ( mfrow = c (1, 2) )
+# plot(data[, c(2,3,4,5,6)], main="Response against predictors")
 
-plot(data[, c(2,7,8,9,10,11)], main="Response against predictors")
+# plot(data[, c(2,7,8,9,10,11)], main="Response against predictors")
+
+plot(data[, c(2,3,4,5,6,7,8,9,10,11)], main="Response against predictors")
 ```
